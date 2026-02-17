@@ -1,0 +1,6 @@
+# SODAPOP 2.0 Coding Rules
+- Framework: Vanilla JS / HTML5 / CSS3 (Jamstack)
+- UI Principle: Google Antigravity (Floating cards, Glassmorphism, Smooth transitions)
+- Data Logic: Always filter out "계" (Total) from KOSIS API results.
+- Code Style: Use Modern ES6+, Utility-first CSS patterns.
+- Administrative Logic: Follow the 10-digit H-Code mapping (Sido-Sigungu-EMD).

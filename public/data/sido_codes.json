@@ -1,0 +1,114 @@
+{
+  "sido_codes": {
+    "11": {
+      "name": "서울특별시",
+      "name_en": "Seoul",
+      "type": "metropolitan",
+      "code_10digit": "1100000000"
+    },
+    "26": {
+      "name": "부산광역시",
+      "name_en": "Busan",
+      "type": "metropolitan",
+      "code_10digit": "2600000000"
+    },
+    "27": {
+      "name": "대구광역시",
+      "name_en": "Daegu",
+      "type": "metropolitan",
+      "code_10digit": "2700000000"
+    },
+    "28": {
+      "name": "인천광역시",
+      "name_en": "Incheon",
+      "type": "metropolitan",
+      "code_10digit": "2800000000"
+    },
+    "29": {
+      "name": "광주광역시",
+      "name_en": "Gwangju",
+      "type": "metropolitan",
+      "code_10digit": "2900000000"
+    },
+    "30": {
+      "name": "대전광역시",
+      "name_en": "Daejeon",
+      "type": "metropolitan",
+      "code_10digit": "3000000000"
+    },
+    "31": {
+      "name": "울산광역시",
+      "name_en": "Ulsan",
+      "type": "metropolitan",
+      "code_10digit": "3100000000"
+    },
+    "36": {
+      "name": "세종특별자치시",
+      "name_en": "Sejong",
+      "type": "special_autonomous",
+      "code_10digit": "3600000000"
+    },
+    "41": {
+      "name": "경기도",
+      "name_en": "Gyeonggi",
+      "type": "province",
+      "code_10digit": "4100000000"
+    },
+    "42": {
+      "name": "강원특별자치도",
+      "name_en": "Gangwon",
+      "type": "special_autonomous_province",
+      "code_10digit": "4200000000",
+      "note": "Changed from 강원도 in 2023"
+    },
+    "43": {
+      "name": "충청북도",
+      "name_en": "Chungcheongbuk",
+      "type": "province",
+      "code_10digit": "4300000000"
+    },
+    "44": {
+      "name": "충청남도",
+      "name_en": "Chungcheongnam",
+      "type": "province",
+      "code_10digit": "4400000000"
+    },
+    "45": {
+      "name": "전북특별자치도",
+      "name_en": "Jeonbuk",
+      "type": "special_autonomous_province",
+      "code_10digit": "4500000000",
+      "note": "Changed from 전라북도 in 2024"
+    },
+    "46": {
+      "name": "전라남도",
+      "name_en": "Jeollanam",
+      "type": "province",
+      "code_10digit": "4600000000"
+    },
+    "47": {
+      "name": "경상북도",
+      "name_en": "Gyeongsangbuk",
+      "type": "province",
+      "code_10digit": "4700000000"
+    },
+    "48": {
+      "name": "경상남도",
+      "name_en": "Gyeongsangnam",
+      "type": "province",
+      "code_10digit": "4800000000"
+    },
+    "50": {
+      "name": "제주특별자치도",
+      "name_en": "Jeju",
+      "type": "special_autonomous_province",
+      "code_10digit": "5000000000"
+    }
+  },
+  "metadata": {
+    "version": "2024",
+    "total_sido": 17,
+    "source": "행정안전부 행정구역코드",
+    "last_updated": "2024-01-01"
+  }
+}
