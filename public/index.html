@@ -49,7 +49,14 @@
                 <option value="">읍/면/동</option>
             </select>
             
-            <input type="text" id="keywordSearch" class="ag-input compact" placeholder="🔍 검색">
+            <!-- 데이터 유형 선택 (검색 대체) -->
+            <select id="dataTypeSelect" class="ag-select compact">
+                <option value="age">연령별 인구</option>
+                <option value="single">1인가구</option>
+                <option value="elderly_alone">독거노인</option>
+                <option value="disabled">장애인</option>
+                <option value="basic_livelihood">기초생활수급</option>
+            </select>
             
             <button class="ag-btn-primary compact" id="runEngineBtn">⚡ 분석</button>
         </div>
@@ -66,40 +73,40 @@
         <span class="breadcrumb-item active">전국</span>
     </nav>
 
-    <!-- Stats Row -->
-    <div class="row g-3 mb-4">
+    <!-- Stats Row (동적으로 변경됨) -->
+    <div class="row g-3 mb-4" id="statsRow">
         <div class="col-md-3">
             <div class="ag-stat-card">
-                <div class="stat-icon">👥</div>
+                <div class="stat-icon" id="stat1Icon">👥</div>
                 <div class="stat-content">
-                    <span class="stat-value" id="totalPopulation">51,700,000</span>
-                    <span class="stat-label">총 인구</span>
+                    <span class="stat-value" id="stat1Value">51,700,000</span>
+                    <span class="stat-label" id="stat1Label">총 인구</span>
                 </div>
-                <div class="stat-trend up" id="popTrend">
+                <div class="stat-trend" id="stat1Trend">
                     <span>▼ 0.2%</span>
                 </div>
             </div>
         </div>
         <div class="col-md-3">
             <div class="ag-stat-card warning">
-                <div class="stat-icon">👴</div>
+                <div class="stat-icon" id="stat2Icon">👴</div>
                 <div class="stat-content">
-                    <span class="stat-value" id="elderlyPopulation">9,930,000</span>
-                    <span class="stat-label">고령인구 (65+)</span>
+                    <span class="stat-value" id="stat2Value">9,930,000</span>
+                    <span class="stat-label" id="stat2Label">고령인구 (65+)</span>
                 </div>
-                <div class="stat-trend up warning" id="elderlyTrend">
+                <div class="stat-trend warning" id="stat2Trend">
                     <span>▲ 4.2%/년</span>
                 </div>
             </div>
         </div>
         <div class="col-md-3">
             <div class="ag-stat-card danger">
-                <div class="stat-icon">📈</div>
+                <div class="stat-icon" id="stat3Icon">📈</div>
                 <div class="stat-content">
-                    <span class="stat-value" id="agingRatio">19.2%</span>
-                    <span class="stat-label">고령화율</span>
+                    <span class="stat-value" id="stat3Value">19.2%</span>
+                    <span class="stat-label" id="stat3Label">비율</span>
                 </div>
-                <div class="stat-badge" id="agingBadge">고령사회</div>
+                <div class="stat-badge" id="stat3Badge">고령사회</div>
             </div>
         </div>
         <div class="col-md-3">

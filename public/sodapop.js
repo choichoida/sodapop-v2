@@ -184,7 +184,16 @@ const NATIONAL_REF = {
     elderlyPopulation: 9930000,
     agingRatio: 19.2,
     oldOldRatio: 42.5,
-    agingVelocity: 4.2
+    agingVelocity: 4.2,
+    // 추가 데이터 유형별 전국 참조값
+    singleHousehold: 7166000,      // 1인가구 수
+    singleHouseholdRatio: 33.4,   // 1인가구 비율
+    elderlyAlone: 1780000,         // 독거노인 수
+    elderlyAloneRatio: 17.9,      // 독거노인 비율 (65+ 중)
+    disabled: 2670000,             // 장애인 수
+    disabledRatio: 5.2,           // 장애인 비율
+    basicLivelihood: 2360000,      // 기초생활수급자 수
+    basicLivelihoodRatio: 4.6     // 기초생활수급 비율
 };
 
 const AGE_GROUPS = [
@@ -199,6 +208,15 @@ const CLUSTER_COLORS = {
     oldOld: '#FC5C65'
 };
 
+// 데이터 유형 정의
+const DATA_TYPES = {
+    age: { name: '연령별 인구', icon: '👥', unit: '명' },
+    single: { name: '1인가구', icon: '🏠', unit: '가구' },
+    elderly_alone: { name: '독거노인', icon: '👴', unit: '명' },
+    disabled: { name: '장애인', icon: '♿', unit: '명' },
+    basic_livelihood: { name: '기초생활수급', icon: '💰', unit: '명' }
+};
+
 // ============================================
 // DATA STORE
 // ============================================
@@ -207,6 +225,7 @@ const DataStore = {
     sidoCodes: {},
     currentYear: 2025,
     currentRegion: null,
+    currentDataType: 'age',  // 현재 선택된 데이터 유형
     compareMode: false,
     initialized: false,
     
@@ -272,9 +291,9 @@ const DataStore = {
     
     generateRegionData(code, name, type) {
         const params = {
-            sido: { basePop: 2000000 + Math.random() * 8000000, childRatio: 0.12, elderlyRatio: 0.18 },
-            urban: { basePop: 200000 + Math.random() * 500000, childRatio: 0.13, elderlyRatio: 0.16 },
-            rural: { basePop: 30000 + Math.random() * 50000, childRatio: 0.08, elderlyRatio: 0.28 }
+            sido: { basePop: 2000000 + Math.random() * 8000000, childRatio: 0.12, elderlyRatio: 0.18, urbanRatio: 0.7 },
+            urban: { basePop: 200000 + Math.random() * 500000, childRatio: 0.13, elderlyRatio: 0.16, urbanRatio: 0.9 },
+            rural: { basePop: 30000 + Math.random() * 50000, childRatio: 0.08, elderlyRatio: 0.28, urbanRatio: 0.3 }
         }[type] || params.urban;
         
         const data = {};
@@ -282,18 +301,49 @@ const DataStore = {
             const yearIdx = year - 2021;
             const agingFactor = 1 + yearIdx * 0.02;
             const youthFactor = 1 - yearIdx * 0.015;
+            const singleFactor = 1 + yearIdx * 0.025; // 1인가구 증가 추세
             
             const totalPop = Math.round(params.basePop * (1 - yearIdx * 0.003));
             const children = Math.round(totalPop * params.childRatio * youthFactor);
             const oldOld = Math.round(totalPop * (params.elderlyRatio * 0.4) * Math.pow(agingFactor, 1.3));
             const youngOld = Math.round(totalPop * (params.elderlyRatio * 0.6) * agingFactor);
             const productive = totalPop - children - youngOld - oldOld;
+            const elderly = youngOld + oldOld;
+            
+            // 가구 수 계산 (평균 가구원수 2.3명 기준)
+            const totalHouseholds = Math.round(totalPop / 2.3);
+            
+            // 1인가구 (도시화율에 따라 차이, 연도별 증가)
+            const singleRatio = (0.28 + params.urbanRatio * 0.1) * singleFactor;
+            const singleHousehold = Math.round(totalHouseholds * singleRatio);
+            
+            // 독거노인 (65세 이상 중 약 18~25%)
+            const elderlyAloneRatio = type === 'rural' ? 0.25 : 0.18;
+            const elderlyAlone = Math.round(elderly * elderlyAloneRatio * agingFactor);
+            
+            // 장애인 (전체 인구의 4~6%)
+            const disabledRatio = 0.045 + Math.random() * 0.015;
+            const disabled = Math.round(totalPop * disabledRatio);
+            
+            // 기초생활수급자 (전체 인구의 3~7%, 농촌 지역 더 높음)
+            const basicRatio = type === 'rural' ? (0.06 + Math.random() * 0.02) : (0.03 + Math.random() * 0.02);
+            const basicLivelihood = Math.round(totalPop * basicRatio);
             
             data[year] = {
                 totalPopulation: totalPop,
+                totalHouseholds,
                 male: Math.round(totalPop * 0.49),
                 female: Math.round(totalPop * 0.51),
                 children, productive, youngOld, oldOld,
+                // 추가 복지 데이터
+                singleHousehold,
+                singleHouseholdRatio: (singleHousehold / totalHouseholds * 100),
+                elderlyAlone,
+                elderlyAloneRatio: (elderlyAlone / elderly * 100),
+                disabled,
+                disabledRatio: (disabled / totalPop * 100),
+                basicLivelihood,
+                basicLivelihoodRatio: (basicLivelihood / totalPop * 100),
                 ageDistribution: this.generateAgeDistribution(totalPop, children, productive, youngOld, oldOld)
             };
         }
@@ -732,6 +782,16 @@ const UI = {
             });
         }
         
+        // Data type change (검색 대체)
+        const dataTypeSelect = document.getElementById('dataTypeSelect');
+        if (dataTypeSelect) {
+            dataTypeSelect.addEventListener('change', e => {
+                DataStore.currentDataType = e.target.value;
+                this.refresh();
+                this.showToast(`${DATA_TYPES[e.target.value].name} 데이터로 전환`);
+            });
+        }
+        
         // Trend metric change
         const trendMetric = document.getElementById('trendMetric');
         if (trendMetric) {
@@ -852,6 +912,7 @@ const UI = {
         
         // Aggregate national data
         let total = 0, elderly = 0, children = 0, productive = 0, youngOld = 0, oldOld = 0;
+        let totalHouseholds = 0, singleHousehold = 0, elderlyAlone = 0, disabled = 0, basicLivelihood = 0;
         
         DataStore.getSidoList().forEach(sido => {
             const region = DataStore.getRegion(sido.code);
@@ -862,15 +923,30 @@ const UI = {
                 productive += d.productive;
                 youngOld += d.youngOld;
                 oldOld += d.oldOld;
+                totalHouseholds += d.totalHouseholds || 0;
+                singleHousehold += d.singleHousehold || 0;
+                elderlyAlone += d.elderlyAlone || 0;
+                disabled += d.disabled || 0;
+                basicLivelihood += d.basicLivelihood || 0;
             }
         });
         elderly = youngOld + oldOld;
         
         this.updateStats({
             totalPopulation: total,
+            totalHouseholds,
             elderly,
             agingRatio: (elderly / total * 100),
-            urgency: 50
+            urgency: 50,
+            // 추가 복지 데이터
+            singleHousehold,
+            singleHouseholdRatio: totalHouseholds > 0 ? (singleHousehold / totalHouseholds * 100) : 0,
+            elderlyAlone,
+            elderlyAloneRatio: elderly > 0 ? (elderlyAlone / elderly * 100) : 0,
+            disabled,
+            disabledRatio: (disabled / total * 100),
+            basicLivelihood,
+            basicLivelihoodRatio: (basicLivelihood / total * 100)
         });
         
         // National pyramid
@@ -914,7 +990,23 @@ const UI = {
         const agingRatio = (elderly / d.totalPopulation * 100);
         const urgency = DataStore.calculateUrgency(d, agingRatio);
         
-        this.updateStats({ totalPopulation: d.totalPopulation, elderly, agingRatio, urgency });
+        // 모든 데이터를 Stats에 전달
+        this.updateStats({ 
+            totalPopulation: d.totalPopulation, 
+            totalHouseholds: d.totalHouseholds,
+            elderly, 
+            agingRatio, 
+            urgency,
+            // 추가 복지 데이터
+            singleHousehold: d.singleHousehold,
+            singleHouseholdRatio: d.singleHouseholdRatio,
+            elderlyAlone: d.elderlyAlone,
+            elderlyAloneRatio: d.elderlyAloneRatio,
+            disabled: d.disabled,
+            disabledRatio: d.disabledRatio,
+            basicLivelihood: d.basicLivelihood,
+            basicLivelihoodRatio: d.basicLivelihoodRatio
+        });
         this.updatePyramid();
         ChartManager.initCluster(d);
         this.updateTrendChart('agingRatio');
@@ -941,34 +1033,111 @@ const UI = {
     },
     
     updateStats(data) {
-        const totalPop = document.getElementById('totalPopulation');
-        if (totalPop) totalPop.textContent = data.totalPopulation.toLocaleString();
+        const dataType = DataStore.currentDataType;
         
-        const elderlyPop = document.getElementById('elderlyPopulation');
-        if (elderlyPop) elderlyPop.textContent = data.elderly.toLocaleString();
-        
-        const agingRatio = document.getElementById('agingRatio');
-        if (agingRatio) agingRatio.textContent = data.agingRatio.toFixed(1) + '%';
-        
+        // 긴급도 점수는 항상 표시
         const urgencyScore = document.getElementById('urgencyScore');
-        if (urgencyScore) urgencyScore.textContent = data.urgency;
+        if (urgencyScore) urgencyScore.textContent = data.urgency || 50;
         
         const urgencyMeter = document.getElementById('urgencyMeter');
-        if (urgencyMeter) urgencyMeter.style.width = data.urgency + '%';
+        if (urgencyMeter) urgencyMeter.style.width = (data.urgency || 50) + '%';
         
-        const badge = document.getElementById('agingBadge');
-        if (badge) {
-            if (data.agingRatio >= 20) {
-                badge.textContent = '초고령사회';
-                badge.className = 'stat-badge critical';
-            } else if (data.agingRatio >= 14) {
-                badge.textContent = '고령사회';
-                badge.className = 'stat-badge';
-            } else {
-                badge.textContent = '고령화사회';
-                badge.className = 'stat-badge';
-                badge.style.background = '#34d399';
-            }
+        // 데이터 유형별 Stats 카드 업데이트
+        const statsConfig = this.getStatsConfig(dataType, data);
+        
+        // Stat 1
+        const stat1Icon = document.getElementById('stat1Icon');
+        const stat1Value = document.getElementById('stat1Value');
+        const stat1Label = document.getElementById('stat1Label');
+        if (stat1Icon) stat1Icon.textContent = statsConfig.stat1.icon;
+        if (stat1Value) stat1Value.textContent = statsConfig.stat1.value;
+        if (stat1Label) stat1Label.textContent = statsConfig.stat1.label;
+        
+        // Stat 2
+        const stat2Icon = document.getElementById('stat2Icon');
+        const stat2Value = document.getElementById('stat2Value');
+        const stat2Label = document.getElementById('stat2Label');
+        if (stat2Icon) stat2Icon.textContent = statsConfig.stat2.icon;
+        if (stat2Value) stat2Value.textContent = statsConfig.stat2.value;
+        if (stat2Label) stat2Label.textContent = statsConfig.stat2.label;
+        
+        // Stat 3
+        const stat3Icon = document.getElementById('stat3Icon');
+        const stat3Value = document.getElementById('stat3Value');
+        const stat3Label = document.getElementById('stat3Label');
+        const stat3Badge = document.getElementById('stat3Badge');
+        if (stat3Icon) stat3Icon.textContent = statsConfig.stat3.icon;
+        if (stat3Value) stat3Value.textContent = statsConfig.stat3.value;
+        if (stat3Label) stat3Label.textContent = statsConfig.stat3.label;
+        if (stat3Badge) {
+            stat3Badge.textContent = statsConfig.stat3.badge;
+            stat3Badge.className = 'stat-badge ' + (statsConfig.stat3.badgeClass || '');
+        }
+    },
+    
+    getStatsConfig(dataType, data) {
+        switch (dataType) {
+            case 'single':
+                return {
+                    stat1: { icon: '👥', value: data.totalPopulation?.toLocaleString() || '-', label: '총 인구' },
+                    stat2: { icon: '🏠', value: data.singleHousehold?.toLocaleString() || '-', label: '1인가구 수' },
+                    stat3: { 
+                        icon: '📊', 
+                        value: (data.singleHouseholdRatio?.toFixed(1) || '-') + '%', 
+                        label: '1인가구 비율',
+                        badge: data.singleHouseholdRatio >= 35 ? '높음' : data.singleHouseholdRatio >= 30 ? '보통' : '낮음',
+                        badgeClass: data.singleHouseholdRatio >= 35 ? 'critical' : ''
+                    }
+                };
+            case 'elderly_alone':
+                return {
+                    stat1: { icon: '👴', value: data.elderly?.toLocaleString() || '-', label: '고령인구 (65+)' },
+                    stat2: { icon: '🏠', value: data.elderlyAlone?.toLocaleString() || '-', label: '독거노인 수' },
+                    stat3: { 
+                        icon: '📊', 
+                        value: (data.elderlyAloneRatio?.toFixed(1) || '-') + '%', 
+                        label: '독거노인 비율',
+                        badge: data.elderlyAloneRatio >= 25 ? '위험' : data.elderlyAloneRatio >= 20 ? '주의' : '양호',
+                        badgeClass: data.elderlyAloneRatio >= 25 ? 'critical' : ''
+                    }
+                };
+            case 'disabled':
+                return {
+                    stat1: { icon: '👥', value: data.totalPopulation?.toLocaleString() || '-', label: '총 인구' },
+                    stat2: { icon: '♿', value: data.disabled?.toLocaleString() || '-', label: '장애인 수' },
+                    stat3: { 
+                        icon: '📊', 
+                        value: (data.disabledRatio?.toFixed(1) || '-') + '%', 
+                        label: '장애인 비율',
+                        badge: data.disabledRatio >= 6 ? '높음' : '보통',
+                        badgeClass: data.disabledRatio >= 6 ? 'critical' : ''
+                    }
+                };
+            case 'basic_livelihood':
+                return {
+                    stat1: { icon: '👥', value: data.totalPopulation?.toLocaleString() || '-', label: '총 인구' },
+                    stat2: { icon: '💰', value: data.basicLivelihood?.toLocaleString() || '-', label: '수급자 수' },
+                    stat3: { 
+                        icon: '📊', 
+                        value: (data.basicLivelihoodRatio?.toFixed(1) || '-') + '%', 
+                        label: '수급률',
+                        badge: data.basicLivelihoodRatio >= 6 ? '높음' : data.basicLivelihoodRatio >= 4 ? '보통' : '낮음',
+                        badgeClass: data.basicLivelihoodRatio >= 6 ? 'critical' : ''
+                    }
+                };
+            case 'age':
+            default:
+                return {
+                    stat1: { icon: '👥', value: data.totalPopulation?.toLocaleString() || '-', label: '총 인구' },
+                    stat2: { icon: '👴', value: data.elderly?.toLocaleString() || '-', label: '고령인구 (65+)' },
+                    stat3: { 
+                        icon: '📈', 
+                        value: (data.agingRatio?.toFixed(1) || '-') + '%', 
+                        label: '고령화율',
+                        badge: data.agingRatio >= 20 ? '초고령사회' : data.agingRatio >= 14 ? '고령사회' : '고령화사회',
+                        badgeClass: data.agingRatio >= 20 ? 'critical' : ''
+                    }
+                };
         }
     },
     
