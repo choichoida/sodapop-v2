@@ -2022,3 +2022,153 @@ body::before {
         grid-template-columns: 1fr;
     }
 }
+
+/* ============================================
+   전 세대 복지 대상 카드 스타일
+   ============================================ */
+
+/* 하이라이트 카드 색상 변형 */
+.ag-card.highlight-primary {
+    border-color: rgba(99, 102, 241, 0.5);
+    background: linear-gradient(135deg, rgba(99, 102, 241, 0.15) 0%, rgba(15, 23, 42, 0.95) 100%);
+}
+
+.ag-card.highlight-warning {
+    border-color: rgba(251, 191, 36, 0.5);
+    background: linear-gradient(135deg, rgba(251, 191, 36, 0.15) 0%, rgba(15, 23, 42, 0.95) 100%);
+}
+
+.ag-card.highlight-danger {
+    border-color: rgba(248, 113, 113, 0.5);
+    background: linear-gradient(135deg, rgba(248, 113, 113, 0.15) 0%, rgba(15, 23, 42, 0.95) 100%);
+}
+
+.ag-card.highlight-info {
+    border-color: rgba(96, 165, 250, 0.5);
+    background: linear-gradient(135deg, rgba(96, 165, 250, 0.15) 0%, rgba(15, 23, 42, 0.95) 100%);
+}
+
+.ag-card.highlight-success {
+    border-color: rgba(52, 211, 153, 0.5);
+    background: linear-gradient(135deg, rgba(52, 211, 153, 0.15) 0%, rgba(15, 23, 42, 0.95) 100%);
+}
+
+/* 트렌드 배지 색상 변형 */
+.trend-badge {
+    display: inline-block;
+    padding: 4px 10px;
+    border-radius: var(--radius-sm);
+    font-size: 0.75rem;
+    font-weight: 600;
+    background: rgba(148, 163, 184, 0.2);
+    color: var(--text-secondary);
+}
+
+.trend-badge.primary {
+    background: rgba(99, 102, 241, 0.2);
+    color: #818cf8;
+}
+
+.trend-badge.danger {
+    background: rgba(248, 113, 113, 0.2);
+    color: #f87171;
+}
+
+.trend-badge.warning {
+    background: rgba(251, 191, 36, 0.2);
+    color: #fbbf24;
+}
+
+.trend-badge.success {
+    background: rgba(52, 211, 153, 0.2);
+    color: #34d399;
+}
+
+.trend-badge.info {
+    background: rgba(96, 165, 250, 0.2);
+    color: #60a5fa;
+}
+
+/* 스탯 배지 색상 */
+.stat-badge.primary {
+    background: rgba(99, 102, 241, 0.2);
+    color: #818cf8;
+}
+
+.stat-badge.critical {
+    background: rgba(220, 38, 38, 0.2);
+    color: #f87171;
+}
+
+/* 피라미드 레전드 - 전 세대 */
+.pyramid-legend .legend-item.children .legend-color {
+    background: #60a5fa;
+}
+
+.pyramid-legend .legend-item.youth .legend-color {
+    background: #34d399;
+}
+
+.pyramid-legend .legend-item.middle .legend-color {
+    background: #a78bfa;
+}
+
+.pyramid-legend .legend-item.elderly .legend-color {
+    background: #f87171;
+}
+
+/* 클러스터 아이템 */
+.cluster-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 0;
+    border-bottom: 1px solid var(--border-subtle);
+}
+
+.cluster-item:last-child {
+    border-bottom: none;
+}
+
+.cluster-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+
+.cluster-info {
+    display: flex;
+    justify-content: space-between;
+    flex: 1;
+    font-size: 0.8rem;
+}
+
+.cluster-name {
+    color: var(--text-secondary);
+}
+
+.cluster-value {
+    color: var(--text-primary);
+    font-weight: 600;
+}
+
+/* 보고서 텍스트 스타일 */
+.report-text .metric {
+    color: #60a5fa;
+    font-weight: 600;
+}
+
+.report-text .warning {
+    color: #fbbf24;
+}
+
+.report-text .critical {
+    color: #f87171;
+    font-weight: 600;
+}
+
+.report-text .highlight {
+    color: #a78bfa;
+    font-weight: 600;
+}
