@@ -17,48 +17,41 @@
 <body>
 
 <!-- ============================================
-     SUSPENSION BAR (Floating Navigation)
+     SUSPENSION BAR (Compact Single Line)
      ============================================ -->
 <nav class="suspension-bar">
-    <div class="container-fluid d-flex align-items-center gap-3">
+    <div class="bar-content">
+        <!-- Logo -->
         <div class="brand">
             <span class="brand-icon">📊</span>
-            <span class="brand-text">SODAPOP <span class="version">2.0</span></span>
+            <span class="brand-text">SODAPOP</span>
         </div>
         
-        <div class="filter-group d-flex gap-2 ms-auto align-items-center">
-            <!-- Year Select -->
-            <select id="yearSelect" class="form-select ag-select">
-                <option value="2025">2025년</option>
-                <option value="2024">2024년</option>
-                <option value="2023">2023년</option>
-                <option value="2022">2022년</option>
-                <option value="2021">2021년</option>
+        <!-- All Controls in One Line -->
+        <div class="controls-row">
+            <select id="yearSelect" class="ag-select compact">
+                <option value="2025">2025</option>
+                <option value="2024">2024</option>
+                <option value="2023">2023</option>
+                <option value="2022">2022</option>
+                <option value="2021">2021</option>
             </select>
             
-            <!-- Region Cascade -->
-            <select id="sidoSelect" class="form-select ag-select">
-                <option value="">시/도 선택</option>
-            </select>
-            <select id="sigunguSelect" class="form-select ag-select" disabled>
-                <option value="">시/군/구 선택</option>
-            </select>
-            <select id="dongSelect" class="form-select ag-select" disabled>
-                <option value="">읍/면/동 선택</option>
+            <select id="sidoSelect" class="ag-select compact">
+                <option value="">시/도</option>
             </select>
             
-            <!-- Keyword Search -->
-            <div class="search-wrapper">
-                <input type="text" id="keywordSearch" class="form-control ag-input" 
-                       placeholder="검색 (예: 1인가구, 독거노인)">
-                <span class="search-icon">🔍</span>
-            </div>
+            <select id="sigunguSelect" class="ag-select compact" disabled>
+                <option value="">시/군/구</option>
+            </select>
             
-            <!-- Action Button -->
-            <button class="btn ag-btn-primary" id="runEngineBtn">
-                <span class="btn-icon">⚡</span>
-                데이터 엔진 실행
-            </button>
+            <select id="dongSelect" class="ag-select compact" disabled>
+                <option value="">읍/면/동</option>
+            </select>
+            
+            <input type="text" id="keywordSearch" class="ag-input compact" placeholder="🔍 검색">
+            
+            <button class="ag-btn-primary compact" id="runEngineBtn">⚡ 분석</button>
         </div>
     </div>
 </nav>
