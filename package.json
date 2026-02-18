@@ -3,12 +3,13 @@
   "version": "2.0.0",
   "description": "SODAPOP 2.0 - Social Demographic Analysis Platform for Optimal Planning",
   "private": true,
+  "type": "module",
   "scripts": {
     "dev": "npx serve public",
     "build": "echo 'Static project - build skipped'",
     "start": "npx serve public"
   },
   "engines": {
-    "node": ">=18.0.0"
+    "node": "20.x"
   }
 }
