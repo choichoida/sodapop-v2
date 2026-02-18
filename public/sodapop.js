@@ -382,8 +382,16 @@ const DataStore = {
     generateSigungu(sidoCode, names) {
         names.forEach((name, i) => {
             const code = `${sidoCode}${String(i + 11).padStart(2, '0')}000000`;
-            const type = name.includes('군') ? 'rural' : 'urban';
+            const isRural = name.includes('군');
+            const type = isRural ? 'rural' : 'urban';
             this.regions.set(code, this.generateRegionData(code, name, type));
+
+            // 기본 읍/면/동 자동 생성 (실제 이름이 있는 경우 나중에 generateEmd로 덮어씀)
+            const base = name.replace(/[시군구]$/, '');
+            const emdNames = isRural
+                ? [`${base}읍`, `${base}1면`, `${base}2면`, `${base}3면`, `${base}4면`, `${base}5면`]
+                : Array.from({ length: 10 }, (_, j) => `${j + 1}동`);
+            this.generateEmd(code, emdNames);
         });
     },
 
