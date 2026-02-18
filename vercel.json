@@ -21,7 +21,16 @@
       ]
     },
     {
-      "source": "/(.*)\\.js",
+      "source": "/sodapop.js",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=0, must-revalidate"
+        }
+      ]
+    },
+    {
+      "source": "/api/(.*)\\.js",
       "headers": [
         {
           "key": "Cache-Control",
