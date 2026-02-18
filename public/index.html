@@ -8,16 +8,13 @@
     <!-- Fonts -->
     <link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css" rel="stylesheet">
     
-    <!-- Bootstrap 5 -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    
-    <!-- Custom Antigravity Styles -->
+    <!-- Custom Styles -->
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
 <!-- ============================================
-     SUSPENSION BAR (Compact Single Line)
+     SUSPENSION BAR (상단 검색 시스템)
      ============================================ -->
 <nav class="suspension-bar">
     <div class="bar-content">
@@ -27,7 +24,7 @@
             <span class="brand-text">SODAPOP</span>
         </div>
         
-        <!-- All Controls in One Line -->
+        <!-- Controls -->
         <div class="controls-row">
             <select id="yearSelect" class="ag-select compact">
                 <option value="2025">2025</option>
@@ -38,7 +35,7 @@
             </select>
             
             <select id="sidoSelect" class="ag-select compact">
-                <option value="">시/도</option>
+                <option value="">시/도 선택</option>
             </select>
             
             <select id="sigunguSelect" class="ag-select compact" disabled>
@@ -62,253 +59,263 @@
                 <option value="basic_livelihood">기초생활수급</option>
             </select>
             
-            <button class="ag-btn-primary compact" id="runEngineBtn">⚡ 분석</button>
+            <button class="ag-btn-primary compact" id="runEngineBtn">
+                🔍 분석
+            </button>
         </div>
     </div>
 </nav>
 
 <!-- ============================================
-     MAIN CONTENT CANVAS
+     MAIN CONTENT
      ============================================ -->
-<main class="container-fluid py-4 content-canvas">
-    
-    <!-- Breadcrumb -->
-    <nav class="ag-breadcrumb mb-4" id="breadcrumb">
-        <span class="breadcrumb-item active">전국</span>
-    </nav>
+<main class="content-canvas">
+    <div class="container-fluid">
+        
+        <!-- Breadcrumb -->
+        <nav class="ag-breadcrumb" id="breadcrumb">
+            <span class="breadcrumb-item active">전국</span>
+        </nav>
 
-    <!-- Stats Row (동적으로 변경됨) -->
-    <div class="row g-3 mb-4" id="statsRow">
-        <div class="col-md-3">
-            <div class="ag-stat-card">
-                <div class="stat-icon" id="stat1Icon">👥</div>
-                <div class="stat-content">
-                    <span class="stat-value" id="stat1Value">51,700,000</span>
-                    <span class="stat-label" id="stat1Label">총 인구</span>
+        <!-- ============================================
+             통계 카드 (Stats Cards)
+             ============================================ -->
+        <div class="stats-grid">
+            <!-- Stat 1: 총 인구 / 대상 인구 -->
+            <div class="stat-card primary">
+                <div class="stat-label">
+                    <span id="stat1Icon">👥</span>
+                    <span id="stat1Label">총 인구 (추계)</span>
                 </div>
-                <div class="stat-trend" id="stat1Trend">
-                    <span>▼ 0.2%</span>
+                <div class="stat-value" id="stat1Value">51.2만</div>
+                <div class="stat-sub" id="stat1Sub">전국 기준</div>
+            </div>
+            
+            <!-- Stat 2: 주요 지표 -->
+            <div class="stat-card rose">
+                <div class="stat-label">
+                    <span id="stat2Icon">👶</span>
+                    <span id="stat2Label">기준 인구 수</span>
                 </div>
+                <div class="stat-value">
+                    <span id="stat2Value">85.0k</span>
+                    <span class="stat-change down" id="stat2Change">▼ 2.1%</span>
+                </div>
+                <div class="stat-sub" id="stat2Sub">전년 대비</div>
+            </div>
+            
+            <!-- Stat 3: 비율 -->
+            <div class="stat-card emerald">
+                <div class="stat-label">
+                    <span id="stat3Icon">📊</span>
+                    <span id="stat3Label">비율</span>
+                </div>
+                <div class="stat-value" id="stat3Value">16.6%</div>
+                <div class="stat-sub" id="stat3Sub">전국 평균 대비</div>
+            </div>
+            
+            <!-- Stat 4: 긴급도 / 지수 -->
+            <div class="stat-card amber">
+                <div class="stat-label">
+                    <span>🎯</span>
+                    <span id="stat4Label">복지 긴급도</span>
+                </div>
+                <div class="stat-value" id="stat4Value">24.1</div>
+                <div class="stat-sub" id="stat4Sub">전국 순위 기준</div>
             </div>
         </div>
-        <div class="col-md-3">
-            <div class="ag-stat-card warning">
-                <div class="stat-icon" id="stat2Icon">👴</div>
-                <div class="stat-content">
-                    <span class="stat-value" id="stat2Value">9,930,000</span>
-                    <span class="stat-label" id="stat2Label">고령인구 (65+)</span>
-                </div>
-                <div class="stat-trend warning" id="stat2Trend">
-                    <span>▲ 4.2%/년</span>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-3">
-            <div class="ag-stat-card danger">
-                <div class="stat-icon" id="stat3Icon">📈</div>
-                <div class="stat-content">
-                    <span class="stat-value" id="stat3Value">19.2%</span>
-                    <span class="stat-label" id="stat3Label">비율</span>
-                </div>
-                <div class="stat-badge" id="stat3Badge">고령사회</div>
-            </div>
-        </div>
-        <div class="col-md-3">
-            <div class="ag-stat-card">
-                <div class="stat-icon">🎯</div>
-                <div class="stat-content">
-                    <span class="stat-value" id="urgencyScore">50</span>
-                    <span class="stat-label">긴급도 점수</span>
-                </div>
-                <div class="urgency-meter">
-                    <div class="meter-fill" id="urgencyMeter" style="width: 50%"></div>
-                </div>
-            </div>
-        </div>
-    </div>
 
-    <!-- Main Grid -->
-    <div class="row g-4">
-        <!-- Left Column: Pyramid Chart -->
-        <div class="col-lg-8">
-            <div class="ag-card h-100">
-                <div class="card-header d-flex justify-content-between align-items-center">
-                    <h5 class="card-title">
-                        <span class="title-icon">💎</span>
-                        지역 인구 구조 피라미드 (전 세대 비교)
-                    </h5>
-                    <div class="card-actions">
-                        <button class="btn btn-sm ag-btn-outline" id="toggleCompare">
-                            📊 전국 비교
-                        </button>
-                        <span class="badge ag-badge" id="compareStatus">비교 모드 OFF</span>
-                    </div>
+        <!-- ============================================
+             차트 영역 1: 인구 추이 & 비율 변화
+             ============================================ -->
+        <div class="population-trend-section">
+            <!-- 지역별 인구 변화 추이 -->
+            <div class="chart-card">
+                <div class="chart-header">
+                    <h3 class="chart-title">
+                        <span class="icon">📈</span>
+                        지역별 인구 변화 추이 (2014-2023)
+                    </h3>
+                    <select id="trendMetric" class="select-sm">
+                        <option value="totalPop">총인구</option>
+                        <option value="childRatio">아동·청소년</option>
+                        <option value="youthRatio">청년</option>
+                        <option value="elderlyRatio">노인</option>
+                    </select>
                 </div>
-                <div class="card-body">
-                    <div class="chart-container" style="height: 450px;">
-                        <canvas id="pyramidChart"></canvas>
+                <div class="chart-body">
+                    <div class="chart-container" style="height: 280px;">
+                        <canvas id="populationTrendChart"></canvas>
                     </div>
-                    <div class="pyramid-legend">
-                        <div class="legend-item male">
-                            <span class="legend-color"></span>
-                            <span>남성</span>
+                    <div class="chart-legend">
+                        <div class="legend-item">
+                            <span class="legend-dot" style="background: var(--primary)"></span>
+                            <span id="trendLegendLabel">선택 지역</span>
                         </div>
-                        <div class="legend-item female">
-                            <span class="legend-color"></span>
-                            <span>여성</span>
-                        </div>
-                        <div class="legend-item children">
-                            <span class="legend-color"></span>
-                            <span>아동·청소년 (0-18)</span>
-                        </div>
-                        <div class="legend-item youth">
-                            <span class="legend-color"></span>
-                            <span>청년 (19-34)</span>
-                        </div>
-                        <div class="legend-item middle">
-                            <span class="legend-color"></span>
-                            <span>중장년 (35-64)</span>
-                        </div>
-                        <div class="legend-item elderly">
-                            <span class="legend-color"></span>
-                            <span>노인 (65+)</span>
-                        </div>
-                        <div class="legend-item compare" id="compareLegend" style="display: none;">
-                            <span class="legend-color"></span>
+                        <div class="legend-item">
+                            <span class="legend-dot" style="background: var(--text-muted)"></span>
                             <span>전국 평균</span>
                         </div>
                     </div>
                 </div>
             </div>
+            
+            <!-- 비율 변화 추이 -->
+            <div class="chart-card">
+                <div class="chart-header">
+                    <h3 class="chart-title">
+                        <span class="icon">📉</span>
+                        <span id="ratioChartTitle">비율 변화 추이 (%)</span>
+                    </h3>
+                </div>
+                <div class="chart-body">
+                    <div class="chart-container" style="height: 280px;">
+                        <canvas id="ratioTrendChart"></canvas>
+                    </div>
+                    <p class="text-muted text-secondary mt-3" style="font-size: 0.75rem;" id="ratioChartNote">
+                        📍 2021년 기준 16.5%에서 매년 상승 추세, 전국 평균 상회
+                    </p>
+                </div>
+            </div>
         </div>
 
-        <!-- Right Column: Stats & Report -->
-        <div class="col-lg-4">
-            <div class="d-flex flex-column gap-4 h-100">
-                
-                <!-- 선택된 대상 주요 지표 -->
-                <div class="ag-card highlight-primary" id="targetCard">
-                    <div class="card-body">
-                        <div class="text-muted small mb-1" id="targetLabel">선택된 복지 대상</div>
-                        <div class="d-flex align-items-end gap-2">
-                            <h2 class="stat-value-lg mb-0" id="targetValue">51,700,000</h2>
-                            <span class="trend-badge" id="targetTrendBadge">전국 기준</span>
-                        </div>
-                        <div class="mini-chart mt-3">
-                            <canvas id="targetTrendMini" height="60"></canvas>
-                        </div>
+        <!-- ============================================
+             차트 영역 2: 인구 구조 변화 (Stacked Bar)
+             ============================================ -->
+        <div class="chart-card composition-chart">
+            <div class="chart-header">
+                <h3 class="chart-title">
+                    <span class="icon">📊</span>
+                    인구 구조 구성비 변화
+                </h3>
+                <span class="badge primary" id="compositionBadge">전 세대 분석</span>
+            </div>
+            <div class="chart-body">
+                <div class="chart-container" style="height: 200px;">
+                    <canvas id="compositionChart"></canvas>
+                </div>
+                <div class="composition-legend">
+                    <div class="composition-legend-item">
+                        <span class="legend-dot" style="background: var(--chart-elderly)"></span>
+                        <span>노인 (65+)</span>
+                    </div>
+                    <div class="composition-legend-item">
+                        <span class="legend-dot" style="background: var(--chart-middle)"></span>
+                        <span>중장년 (35-64)</span>
+                    </div>
+                    <div class="composition-legend-item">
+                        <span class="legend-dot" style="background: var(--chart-youth)"></span>
+                        <span>청년 (19-34)</span>
+                    </div>
+                    <div class="composition-legend-item">
+                        <span class="legend-dot" style="background: var(--chart-children)"></span>
+                        <span>아동·청소년 (0-18)</span>
                     </div>
                 </div>
+            </div>
+        </div>
 
-                <!-- 전 세대 복지 분포 -->
-                <div class="ag-card flex-grow-1">
-                    <div class="card-header">
-                        <h6 class="card-title mb-0">
-                            <span class="title-icon">🎯</span>
-                            전 세대 복지 대상 분포
-                        </h6>
-                    </div>
-                    <div class="card-body">
-                        <div class="chart-container" style="height: 180px;">
+        <!-- ============================================
+             하단 영역: 분포 차트 & 순위
+             ============================================ -->
+        <div class="dashboard-grid">
+            <!-- 세대별 분포 (Doughnut) -->
+            <div class="chart-card">
+                <div class="chart-header">
+                    <h3 class="chart-title">
+                        <span class="icon">🎯</span>
+                        전 세대 복지 대상 분포
+                    </h3>
+                </div>
+                <div class="chart-body">
+                    <div class="d-flex gap-4">
+                        <div class="chart-container" style="width: 180px; height: 180px;">
                             <canvas id="clusterChart"></canvas>
                         </div>
-                        <div class="cluster-breakdown mt-3" id="clusterBreakdown">
-                            <!-- Populated by JS -->
-                        </div>
-                    </div>
-                </div>
-
-                <!-- AI Report Card -->
-                <div class="ag-card report-card">
-                    <div class="card-header">
-                        <h6 class="card-title mb-0">
-                            <span class="title-icon">📝</span>
-                            사업계획서용 당위성 근거
-                        </h6>
-                    </div>
-                    <div class="card-body">
-                        <div class="report-text" id="aiReport">
-                            지역과 복지 대상을 선택하시면<br>
-                            <strong>맞춤형 사업 필요성 근거</strong>가 자동 생성됩니다.
-                        </div>
-                        <div class="report-actions mt-3">
-                            <button class="btn ag-btn-outline w-100" id="generateReportBtn">
-                                ✨ 근거 문구 생성
-                            </button>
-                            <button class="btn ag-btn-primary w-100 mt-2" id="copyReportBtn" style="display: none;">
-                                📋 보고서 문구 복사하기
-                            </button>
+                        <div class="cluster-breakdown" id="clusterBreakdown">
+                            <!-- JS에서 동적 생성 -->
                         </div>
                     </div>
                 </div>
             </div>
-        </div>
-    </div>
-
-    <!-- Bottom Row: Trend & Rankings -->
-    <div class="row g-4 mt-2">
-        <!-- Trend Chart -->
-        <div class="col-lg-6">
-            <div class="ag-card">
-                <div class="card-header d-flex justify-content-between align-items-center">
-                    <h6 class="card-title mb-0">
-                        <span class="title-icon">📈</span>
-                        시계열 추세 분석 (2021-2025)
-                    </h6>
-                    <select id="trendMetric" class="form-select ag-select-sm">
-                        <option value="totalPop">총인구 변화</option>
-                        <option value="childRatio">아동·청소년 비율</option>
-                        <option value="youthRatio">청년 비율</option>
-                        <option value="elderlyRatio">노인 비율</option>
-                        <option value="singleRatio">1인가구 비율</option>
-                        <option value="dependency">부양비</option>
-                    </select>
-                </div>
-                <div class="card-body">
-                    <div class="chart-container" style="height: 250px;">
-                        <canvas id="trendChart"></canvas>
-                    </div>
-                    <div class="trend-summary d-flex gap-4 mt-3">
-                        <div class="summary-item">
-                            <span class="label">5년간 변화</span>
-                            <span class="value text-danger" id="trendChange">+2.7%p</span>
-                        </div>
-                        <div class="summary-item">
-                            <span class="label">연평균 증가율</span>
-                            <span class="value" id="trendCAGR">+4.2%</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Rankings -->
-        <div class="col-lg-6">
-            <div class="ag-card">
-                <div class="card-header d-flex justify-content-between align-items-center">
-                    <h6 class="card-title mb-0">
-                        <span class="title-icon">🏆</span>
+            
+            <!-- 복지 긴급도 순위 -->
+            <div class="chart-card ranking-card">
+                <div class="chart-header">
+                    <h3 class="chart-title">
+                        <span class="icon">🏆</span>
                         복지 긴급도 순위
-                    </h6>
-                    <select id="rankingScope" class="form-select ag-select-sm">
+                    </h3>
+                    <select id="rankingScope" class="select-sm">
                         <option value="sigungu">시군구별</option>
                         <option value="sido">시도별</option>
                     </select>
                 </div>
-                <div class="card-body">
-                    <div class="ranking-list" id="rankingList">
-                        <!-- Populated by JS -->
-                    </div>
+                <div class="ranking-list" id="rankingList">
+                    <!-- JS에서 동적 생성 -->
                 </div>
             </div>
         </div>
+
+        <!-- ============================================
+             AI 분석 리포트 섹션
+             ============================================ -->
+        <div class="ai-report-section">
+            <div class="ai-report-header">
+                <div class="ai-icon">✨</div>
+                <h3>Gemini AI 심층 분석</h3>
+            </div>
+            
+            <div class="ai-report-body">
+                <h4>📋 종합 현안</h4>
+                <div class="report-text" id="aiReportSummary">
+                    <p>지역과 복지 대상을 선택하시면 <strong>KOSIS 데이터 기반 심층 분석</strong>이 자동 생성됩니다.</p>
+                </div>
+                
+                <div class="ai-report-grid">
+                    <div class="ai-report-column">
+                        <h5>⚠️ 주요 위험요소</h5>
+                        <ul id="aiReportRisks">
+                            <li>지역을 선택해주세요</li>
+                        </ul>
+                    </div>
+                    <div class="ai-report-column">
+                        <h5>✅ 필요한 복지 대책</h5>
+                        <ul id="aiReportActions">
+                            <li>분석 버튼을 클릭해주세요</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="ai-report-footer">
+                <h5>🔮 향후 전망</h5>
+                <p id="aiReportForecast">지역을 선택하면 맞춤형 전망이 생성됩니다.</p>
+            </div>
+            
+            <div style="padding: var(--space-4) var(--space-5); border-top: 1px solid var(--border-light); display: flex; gap: var(--space-3);">
+                <button class="ag-btn-primary" id="generateReportBtn" style="flex: 1;">
+                    ✨ AI 분석 생성
+                </button>
+                <button class="ag-btn-primary" id="copyReportBtn" style="flex: 1; background: var(--text-secondary); display: none;">
+                    📋 보고서 복사
+                </button>
+            </div>
+        </div>
+        
+        <!-- Footer -->
+        <footer style="text-align: center; padding: var(--space-6) 0; color: var(--text-muted); font-size: 0.75rem;">
+            전국단위 인구·세대 복지 분석 데이터 대시보드 [Local Ver 3.0]<br>
+            22.05.08 ver 1.0 ~ 배포일자 2025.01.15 - 개발자 : 박찬주, 배예진
+        </footer>
+        
     </div>
 </main>
 
 <!-- Toast Notification -->
 <div class="ag-toast" id="toast">
     <span class="toast-icon">✓</span>
-    <span class="toast-message" id="toastMessage">복사되었습니다</span>
+    <span class="toast-message" id="toastMessage">완료되었습니다</span>
 </div>
 
 <!-- Loading Overlay -->
@@ -321,7 +328,6 @@
 
 <!-- Scripts -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script src="sodapop.js"></script>
 
 </body>

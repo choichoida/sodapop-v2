@@ -497,154 +497,202 @@ const DataStore = {
 };
 
 // ============================================
-// CHART MANAGER
+// CHART MANAGER (Light Theme)
 // ============================================
 const ChartManager = {
-    pyramidChart: null,
-    trendChart: null,
+    populationTrendChart: null,
+    ratioTrendChart: null,
+    compositionChart: null,
     clusterChart: null,
-    miniChart: null,
     
-    initPyramid(data, compareData = null) {
-        const ctx = document.getElementById('pyramidChart')?.getContext('2d');
+    // 라이트 테마 공통 설정
+    lightTheme: {
+        textColor: '#64748b',
+        gridColor: 'rgba(226, 232, 240, 0.8)',
+        tooltipBg: 'rgba(30, 41, 59, 0.95)',
+        colors: {
+            primary: '#3b82f6',
+            rose: '#f43f5e',
+            emerald: '#10b981',
+            amber: '#f59e0b',
+            violet: '#8b5cf6',
+            children: '#60a5fa',
+            youth: '#34d399',
+            middle: '#a78bfa',
+            elderly: '#fb7185'
+        }
+    },
+    
+    // 인구 추이 차트 (Area Chart)
+    initPopulationTrend(data, nationalData, label = '선택 지역') {
+        const ctx = document.getElementById('populationTrendChart')?.getContext('2d');
         if (!ctx) return;
         
-        if (this.pyramidChart) this.pyramidChart.destroy();
+        if (this.populationTrendChart) this.populationTrendChart.destroy();
         
-        const maleData = data.male.map(v => -v);
-        const femaleData = data.female;
+        const years = ['2014', '2015', '2016', '2017', '2018', '2019', '2020', '2021', '2022', '2023'];
         
-        // 전 세대 색상: 아동(파랑), 청년(초록), 중장년(보라), 노인(빨강/주황)
-        // AGE_GROUPS: 0-4 ~ 85+ (18개 그룹)
-        // 0-4(0), 5-9(1), 10-14(2), 15-19(3) → 아동·청소년 (4개)
-        // 20-24(4), 25-29(5), 30-34(6) → 청년 (3개)
-        // 35-39(7) ~ 60-64(12) → 중장년 (6개)
-        // 65-69(13) ~ 85+(17) → 노인 (5개)
-        const getAgeGroupColor = (i, isMale) => {
-            const alpha = isMale ? 0.8 : 0.7;
-            if (i <= 3) return `rgba(96, 165, 250, ${alpha})`;   // 아동·청소년 (파랑)
-            if (i <= 6) return `rgba(52, 211, 153, ${alpha})`;   // 청년 (초록)
-            if (i <= 12) return `rgba(167, 139, 250, ${alpha})`; // 중장년 (보라)
-            if (i <= 14) return `rgba(251, 191, 36, ${alpha})`;  // 전기고령 (노랑)
-            return `rgba(248, 113, 113, ${alpha})`;               // 후기고령 (빨강)
-        };
-        
-        const maleColors = AGE_GROUPS.map((_, i) => getAgeGroupColor(i, true));
-        const femaleColors = AGE_GROUPS.map((_, i) => getAgeGroupColor(i, false));
-        
-        const datasets = [
-            {
-                label: '남성',
-                data: maleData,
-                backgroundColor: maleColors,
-                borderRadius: 2,
-                barPercentage: 0.9
+        this.populationTrendChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: years,
+                datasets: [
+                    {
+                        label: label,
+                        data: data,
+                        borderColor: this.lightTheme.colors.primary,
+                        backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                        borderWidth: 2,
+                        fill: true,
+                        tension: 0.3,
+                        pointRadius: 4,
+                        pointBackgroundColor: this.lightTheme.colors.primary
+                    },
+                    {
+                        label: '전국 평균',
+                        data: nationalData,
+                        borderColor: this.lightTheme.textColor,
+                        borderWidth: 1.5,
+                        borderDash: [4, 4],
+                        tension: 0.3,
+                        pointRadius: 0,
+                        fill: false
+                    }
+                ]
             },
-            {
-                label: '여성',
-                data: femaleData,
-                backgroundColor: femaleColors,
-                borderRadius: 2,
-                barPercentage: 0.9
-            }
-        ];
-        
-        if (compareData) {
-            datasets.push({
-                label: '전국 (남)',
-                data: compareData.male.map(v => -v),
-                backgroundColor: 'transparent',
-                borderColor: 'rgba(255,255,255,0.5)',
-                borderWidth: 2,
-                borderDash: [5, 5],
-                type: 'bar',
-                barPercentage: 0.9
-            });
-            datasets.push({
-                label: '전국 (여)',
-                data: compareData.female,
-                backgroundColor: 'transparent',
-                borderColor: 'rgba(255,255,255,0.5)',
-                borderWidth: 2,
-                borderDash: [5, 5],
-                type: 'bar',
-                barPercentage: 0.9
-            });
-        }
-        
-        const maxVal = Math.max(...data.male, ...data.female) * 1.15;
-        
-        this.pyramidChart = new Chart(ctx, {
-            type: 'bar',
-            data: { labels: AGE_GROUPS, datasets },
             options: {
-                indexAxis: 'y',
                 responsive: true,
                 maintainAspectRatio: false,
-                animation: { duration: 800 },
+                interaction: { intersect: false, mode: 'index' },
                 plugins: {
                     legend: { display: false },
                     tooltip: {
-                        backgroundColor: 'rgba(15, 23, 42, 0.95)',
+                        backgroundColor: this.lightTheme.tooltipBg,
                         titleColor: '#f1f5f9',
                         bodyColor: '#94a3b8',
-                        callbacks: {
-                            label: ctx => `${ctx.dataset.label}: ${Math.abs(ctx.raw).toLocaleString()}명`
-                        }
+                        padding: 12,
+                        cornerRadius: 8
                     }
                 },
                 scales: {
-                    x: {
-                        min: -maxVal,
-                        max: maxVal,
-                        grid: { color: 'rgba(148, 163, 184, 0.1)' },
-                        ticks: {
-                            color: '#94a3b8',
-                            callback: v => Math.abs(v) >= 1000 ? Math.abs(v)/1000 + 'K' : Math.abs(v)
-                        }
-                    },
-                    y: {
+                    x: { 
                         grid: { display: false },
-                        ticks: {
-                            color: (ctx) => ctx.index >= 13 ? '#f87171' : '#94a3b8',
-                            font: { weight: ctx => ctx.index >= 13 ? 'bold' : 'normal' }
+                        ticks: { color: this.lightTheme.textColor, font: { size: 11 } }
+                    },
+                    y: { 
+                        grid: { color: this.lightTheme.gridColor },
+                        ticks: { 
+                            color: this.lightTheme.textColor,
+                            font: { size: 11 },
+                            callback: v => v >= 10000 ? (v/10000).toFixed(0) + '만' : v.toLocaleString()
                         }
                     }
                 }
             }
         });
+        
+        // 범례 레이블 업데이트
+        const legendLabel = document.getElementById('trendLegendLabel');
+        if (legendLabel) legendLabel.textContent = label;
     },
     
-    initTrend(data, nationalData) {
-        const ctx = document.getElementById('trendChart')?.getContext('2d');
+    // 비율 추이 차트 (Line + 점)
+    initRatioTrend(data, title = '비율 변화 (%)') {
+        const ctx = document.getElementById('ratioTrendChart')?.getContext('2d');
         if (!ctx) return;
         
-        if (this.trendChart) this.trendChart.destroy();
+        if (this.ratioTrendChart) this.ratioTrendChart.destroy();
         
-        this.trendChart = new Chart(ctx, {
+        const years = ['2014', '2015', '2016', '2017', '2018', '2019', '2020', '2021', '2022', '2023'];
+        
+        this.ratioTrendChart = new Chart(ctx, {
             type: 'line',
             data: {
-                labels: data.years,
+                labels: years,
+                datasets: [{
+                    data: data,
+                    borderColor: this.lightTheme.colors.rose,
+                    backgroundColor: 'rgba(244, 63, 94, 0.05)',
+                    borderWidth: 2,
+                    fill: true,
+                    tension: 0.3,
+                    pointRadius: 5,
+                    pointBackgroundColor: '#fff',
+                    pointBorderColor: this.lightTheme.colors.rose,
+                    pointBorderWidth: 2
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        backgroundColor: this.lightTheme.tooltipBg,
+                        callbacks: {
+                            label: ctx => `${ctx.parsed.y.toFixed(1)}%`
+                        }
+                    }
+                },
+                scales: {
+                    x: { 
+                        grid: { display: false },
+                        ticks: { color: this.lightTheme.textColor, font: { size: 11 } }
+                    },
+                    y: { 
+                        grid: { color: this.lightTheme.gridColor },
+                        ticks: { 
+                            color: this.lightTheme.textColor,
+                            font: { size: 11 },
+                            callback: v => v + '%'
+                        }
+                    }
+                }
+            }
+        });
+        
+        // 차트 제목 업데이트
+        const chartTitle = document.getElementById('ratioChartTitle');
+        if (chartTitle) chartTitle.textContent = title;
+    },
+    
+    // 인구 구성비 변화 (Stacked Bar)
+    initComposition(yearlyData) {
+        const ctx = document.getElementById('compositionChart')?.getContext('2d');
+        if (!ctx) return;
+        
+        if (this.compositionChart) this.compositionChart.destroy();
+        
+        const years = ['2014', '2015', '2016', '2017', '2018', '2019', '2020', '2021', '2022', '2023'];
+        
+        this.compositionChart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: years,
                 datasets: [
                     {
-                        label: data.label,
-                        data: data.values,
-                        borderColor: '#6366f1',
-                        backgroundColor: 'rgba(99, 102, 241, 0.1)',
-                        borderWidth: 3,
-                        fill: true,
-                        tension: 0.4,
-                        pointRadius: 5,
-                        pointBackgroundColor: '#6366f1'
+                        label: '노인 (65+)',
+                        data: yearlyData.elderly,
+                        backgroundColor: this.lightTheme.colors.elderly,
+                        borderRadius: 2
                     },
                     {
-                        label: '전국 평균',
-                        data: nationalData,
-                        borderColor: '#64748b',
-                        borderWidth: 2,
-                        borderDash: [5, 5],
-                        tension: 0.4,
-                        pointRadius: 3
+                        label: '중장년 (35-64)',
+                        data: yearlyData.middle,
+                        backgroundColor: this.lightTheme.colors.middle,
+                        borderRadius: 2
+                    },
+                    {
+                        label: '청년 (19-34)',
+                        data: yearlyData.youth,
+                        backgroundColor: this.lightTheme.colors.youth,
+                        borderRadius: 2
+                    },
+                    {
+                        label: '아동·청소년 (0-18)',
+                        data: yearlyData.children,
+                        backgroundColor: this.lightTheme.colors.children,
+                        borderRadius: 2
                     }
                 ]
             },
@@ -652,42 +700,55 @@ const ChartManager = {
                 responsive: true,
                 maintainAspectRatio: false,
                 plugins: {
-                    legend: {
-                        display: true,
-                        position: 'top',
-                        labels: { color: '#94a3b8', usePointStyle: true }
+                    legend: { display: false },
+                    tooltip: {
+                        backgroundColor: this.lightTheme.tooltipBg,
+                        callbacks: {
+                            label: ctx => `${ctx.dataset.label}: ${ctx.parsed.y.toFixed(1)}%`
+                        }
                     }
                 },
                 scales: {
-                    x: { grid: { color: 'rgba(148, 163, 184, 0.1)' }, ticks: { color: '#94a3b8' } },
-                    y: { grid: { color: 'rgba(148, 163, 184, 0.1)' }, ticks: { color: '#94a3b8', callback: v => v + '%' } }
+                    x: {
+                        stacked: true,
+                        grid: { display: false },
+                        ticks: { color: this.lightTheme.textColor, font: { size: 11 } }
+                    },
+                    y: {
+                        stacked: true,
+                        max: 100,
+                        grid: { color: this.lightTheme.gridColor },
+                        ticks: { 
+                            color: this.lightTheme.textColor,
+                            font: { size: 11 },
+                            callback: v => v + '%'
+                        }
+                    }
                 }
             }
         });
     },
     
+    // 세대별 분포 차트 (Doughnut)
     initCluster(data) {
         const ctx = document.getElementById('clusterChart')?.getContext('2d');
         if (!ctx) return;
         
         if (this.clusterChart) this.clusterChart.destroy();
         
-        // 데이터 유형에 따라 클러스터 구성 변경
-        const dataType = DataStore.currentDataType;
-        let labels, values, colors;
-        
-        if (dataType === 'all' || dataType === 'children' || dataType === 'youth' || 
-            dataType === 'middle' || dataType === 'elderly') {
-            // 전 세대 분포
-            labels = ['아동·청소년 (0-18)', '청년·중장년 (19-64)', '전기고령 (65-74)', '후기고령 (75+)'];
-            values = [data.children || 0, data.productive || 0, data.youngOld || 0, data.oldOld || 0];
-            colors = [CLUSTER_COLORS.children, CLUSTER_COLORS.productive, CLUSTER_COLORS.youngOld, CLUSTER_COLORS.oldOld];
-        } else {
-            // 기본 4분류
-            labels = ['아동·청소년', '생산가능', '전기고령', '후기고령'];
-            values = [data.children || 0, data.productive || 0, data.youngOld || 0, data.oldOld || 0];
-            colors = [CLUSTER_COLORS.children, CLUSTER_COLORS.productive, CLUSTER_COLORS.youngOld, CLUSTER_COLORS.oldOld];
-        }
+        const labels = ['아동·청소년', '청년', '중장년', '노인'];
+        const values = [
+            data.children || 0, 
+            data.youth || Math.round((data.productive || 0) * 0.35),
+            data.middle || Math.round((data.productive || 0) * 0.65),
+            (data.youngOld || 0) + (data.oldOld || 0)
+        ];
+        const colors = [
+            this.lightTheme.colors.children,
+            this.lightTheme.colors.youth,
+            this.lightTheme.colors.middle,
+            this.lightTheme.colors.elderly
+        ];
         
         this.clusterChart = new Chart(ctx, {
             type: 'doughnut',
@@ -696,14 +757,27 @@ const ChartManager = {
                 datasets: [{
                     data: values,
                     backgroundColor: colors,
-                    borderWidth: 0
+                    borderWidth: 2,
+                    borderColor: '#fff'
                 }]
             },
             options: {
                 responsive: true,
-                maintainAspectRatio: false,
-                cutout: '65%',
-                plugins: { legend: { display: false } }
+                maintainAspectRatio: true,
+                cutout: '60%',
+                plugins: { 
+                    legend: { display: false },
+                    tooltip: {
+                        backgroundColor: this.lightTheme.tooltipBg,
+                        callbacks: {
+                            label: ctx => {
+                                const total = ctx.dataset.data.reduce((a, b) => a + b, 0);
+                                const pct = ((ctx.parsed / total) * 100).toFixed(1);
+                                return `${ctx.label}: ${pct}%`;
+                            }
+                        }
+                    }
+                }
             }
         });
         
@@ -1220,23 +1294,206 @@ const UI = {
         
         this.updateStats(dataForStats);
         
-        // National pyramid
-        const nationalDist = this.generateNationalDistribution(total);
-        ChartManager.initPyramid(nationalDist);
-        
-        // 전 세대 클러스터 차트 (아동/청년/중장년/노인)
-        ChartManager.initCluster({ 
-            children, 
-            productive: youth + middle,  // 청년+중장년 
-            youngOld, 
-            oldOld 
-        });
-        
-        this.updateTrendChart('totalPop', true);
-        this.updateTargetCard(dataForStats);
+        // 새로운 차트 시스템
+        this.initAllCharts(dataForStats, '전국');
         
         this.updateBreadcrumb(['전국']);
         this.updateRankings();
+        this.updateAIReport(dataForStats, '전국');
+    },
+    
+    initAllCharts(data, regionName) {
+        // 1. 인구 추이 차트 (10년)
+        const popTrend = this.generateTrendData('population');
+        const nationalPopTrend = this.generateTrendData('population', true);
+        ChartManager.initPopulationTrend(popTrend, nationalPopTrend, regionName);
+        
+        // 2. 비율 추이 차트
+        const dataType = DataStore.currentDataType;
+        const ratioTrend = this.generateTrendData(dataType === 'all' ? 'elderlyRatio' : dataType);
+        const titleMap = {
+            all: '고령화율 변화 (%)',
+            children: '아동·청소년 비율 변화 (%)',
+            youth: '청년 비율 변화 (%)',
+            middle: '중장년 비율 변화 (%)',
+            elderly: '고령화율 변화 (%)',
+            single: '1인가구 비율 변화 (%)',
+            multicultural: '다문화가구 비율 변화 (%)',
+            disabled: '장애인 비율 변화 (%)',
+            basic_livelihood: '수급률 변화 (%)'
+        };
+        ChartManager.initRatioTrend(ratioTrend, titleMap[dataType] || '비율 변화 (%)');
+        
+        // 3. 인구 구성비 변화 (Stacked Bar)
+        const compositionData = this.generateCompositionData();
+        ChartManager.initComposition(compositionData);
+        
+        // 4. 세대별 분포 차트
+        ChartManager.initCluster({
+            children: data.children || 0,
+            youth: data.youth || 0,
+            middle: data.middle || 0,
+            productive: (data.youth || 0) + (data.middle || 0),
+            youngOld: data.youngOld || 0,
+            oldOld: data.oldOld || 0
+        });
+        
+        // 비율 차트 노트 업데이트
+        this.updateRatioNote(data);
+    },
+    
+    generateTrendData(type, isNational = false) {
+        const region = isNational ? null : DataStore.currentRegion;
+        
+        // 10년 데이터 시뮬레이션
+        const baseTrends = {
+            population: isNational ? 
+                [50000, 50500, 51000, 51200, 51400, 51500, 51600, 51650, 51700, 51650] :
+                [45000, 46000, 47000, 47500, 48000, 48200, 48500, 48700, 49000, 48800],
+            elderlyRatio: isNational ?
+                [12.5, 13.2, 14.0, 14.9, 15.8, 16.5, 17.4, 18.2, 18.8, 19.2] :
+                [11.0, 12.0, 13.0, 14.0, 15.0, 16.0, 17.0, 18.0, 19.0, 20.0],
+            children: [20.5, 19.8, 19.2, 18.5, 18.0, 17.5, 17.0, 16.5, 16.2, 15.8],
+            youth: [20.0, 19.5, 19.0, 18.5, 18.0, 17.6, 17.2, 16.9, 16.6, 16.3],
+            middle: [40.0, 40.5, 41.0, 41.2, 41.4, 41.5, 41.5, 41.4, 41.3, 41.2],
+            elderly: [12.5, 13.2, 14.0, 14.9, 15.8, 16.5, 17.4, 18.2, 18.8, 19.2],
+            single: [26.0, 27.0, 28.0, 29.0, 29.5, 30.0, 30.5, 31.0, 31.5, 32.0],
+            multicultural: [1.2, 1.3, 1.4, 1.5, 1.5, 1.6, 1.6, 1.7, 1.7, 1.8],
+            disabled: [4.8, 4.9, 5.0, 5.0, 5.1, 5.1, 5.1, 5.2, 5.2, 5.2],
+            basic_livelihood: [3.8, 4.0, 4.2, 4.3, 4.4, 4.5, 4.5, 4.6, 4.6, 4.6]
+        };
+        
+        // 지역이 있으면 약간의 변동 추가
+        let data = baseTrends[type] || baseTrends.elderlyRatio;
+        
+        if (region && !isNational) {
+            const factor = 0.9 + Math.random() * 0.2;
+            data = data.map(v => Math.round(v * factor * 10) / 10);
+        }
+        
+        return data;
+    },
+    
+    generateCompositionData() {
+        // 10년간 인구 구성비 변화 데이터
+        return {
+            elderly: [12.5, 13.2, 14.0, 14.9, 15.8, 16.5, 17.4, 18.2, 18.8, 19.2],
+            middle: [40.0, 40.5, 41.0, 41.2, 41.4, 41.5, 41.5, 41.4, 41.3, 41.2],
+            youth: [20.0, 19.5, 19.0, 18.5, 18.0, 17.6, 17.2, 16.9, 16.6, 16.3],
+            children: [20.5, 19.8, 19.2, 18.5, 18.0, 17.5, 17.0, 16.5, 16.2, 15.8]
+        };
+    },
+    
+    updateRatioNote(data) {
+        const note = document.getElementById('ratioChartNote');
+        if (!note) return;
+        
+        const dataType = DataStore.currentDataType;
+        const year = DataStore.currentYear;
+        
+        const notes = {
+            all: `📍 ${year}년 기준 고령화율 ${(data.elderlyRatio || 19.2).toFixed(1)}%, 매년 상승 추세`,
+            children: `📍 저출산으로 아동인구 지속 감소, ${year}년 ${(data.childrenRatio || 16).toFixed(1)}%`,
+            youth: `📍 청년 인구 유출 심화, ${year}년 ${(data.youthRatio || 17).toFixed(1)}%`,
+            middle: `📍 핵심 생산인구, ${year}년 ${(data.middleRatio || 41).toFixed(1)}%`,
+            elderly: `📍 초고령사회 진입, ${year}년 고령화율 ${(data.elderlyRatio || 19.2).toFixed(1)}%`,
+            single: `📍 1인가구 급증, ${year}년 ${(data.singleHouseholdRatio || 32).toFixed(1)}%`,
+            multicultural: `📍 다문화가구 증가 추세, ${year}년 ${(data.multiculturalRatio || 1.7).toFixed(1)}%`,
+            disabled: `📍 장애인 비율 안정적, ${year}년 ${(data.disabledRatio || 5.2).toFixed(1)}%`,
+            basic_livelihood: `📍 기초생활수급률, ${year}년 ${(data.basicLivelihoodRatio || 4.6).toFixed(1)}%`
+        };
+        
+        note.textContent = notes[dataType] || notes.all;
+    },
+    
+    updateAIReport(data, regionName) {
+        const dataType = DataStore.currentDataType;
+        const typeInfo = DATA_TYPES[dataType] || DATA_TYPES.all;
+        
+        // 종합 현안
+        const summary = document.getElementById('aiReportSummary');
+        if (summary) {
+            const summaryText = this.getAISummary(data, regionName, dataType);
+            summary.innerHTML = `<p>${summaryText}</p>`;
+        }
+        
+        // 위험요소
+        const risks = document.getElementById('aiReportRisks');
+        if (risks) {
+            risks.innerHTML = this.getAIRisks(data, dataType);
+        }
+        
+        // 필요 대책
+        const actions = document.getElementById('aiReportActions');
+        if (actions) {
+            actions.innerHTML = this.getAIActions(data, dataType);
+        }
+        
+        // 향후 전망
+        const forecast = document.getElementById('aiReportForecast');
+        if (forecast) {
+            forecast.textContent = this.getAIForecast(data, regionName, dataType);
+        }
+    },
+    
+    getAISummary(data, regionName, dataType) {
+        const summaries = {
+            all: `${regionName}은(는) 총 인구 ${(data.totalPopulation/10000).toFixed(1)}만명으로, 전체 가구 중 1인가구 비율이 ${(data.singleHouseholdRatio || 32).toFixed(1)}%에 달하며, 고령화율 ${(data.elderlyRatio || 19.2).toFixed(1)}%로 전 세대에 걸친 종합적인 복지 대책이 필요합니다.`,
+            children: `${regionName}의 아동·청소년 인구는 ${(data.children/10000).toFixed(1)}만명(${(data.childrenRatio || 16).toFixed(1)}%)으로, 저출산 심화로 인해 아동복지 인프라 재편과 돌봄서비스 강화가 시급합니다.`,
+            youth: `${regionName}의 청년 인구는 ${(data.youth/10000).toFixed(1)}만명(${(data.youthRatio || 17).toFixed(1)}%)으로, 일자리·주거·결혼 등 복합적 어려움에 직면해 있어 맞춤형 청년정책이 필요합니다.`,
+            middle: `${regionName}의 중장년 인구는 ${(data.middle/10000).toFixed(1)}만명(${(data.middleRatio || 41).toFixed(1)}%)으로, 가족돌봄 부담과 노후준비 이중고에 시달리는 '샌드위치 세대'입니다.`,
+            elderly: `${regionName}의 65세 이상 노인 인구는 ${((data.elderly || 0)/10000).toFixed(1)}만명(${(data.elderlyRatio || 19.2).toFixed(1)}%)으로, 독거노인 ${(data.elderlyAlone/10000).toFixed(1)}만명에 대한 돌봄 강화가 시급합니다.`,
+            single: `${regionName}의 1인가구는 ${(data.singleHousehold/10000).toFixed(1)}만 가구(${(data.singleHouseholdRatio || 32).toFixed(1)}%)로, 고독사 예방과 사회적 연결망 구축이 핵심 과제입니다.`,
+            multicultural: `${regionName}의 다문화가구는 약 ${(data.multicultural/1000).toFixed(1)}천 가구로, 언어·문화 적응 지원과 자녀 교육 지원이 필요합니다.`,
+            disabled: `${regionName}의 등록 장애인은 ${(data.disabled/10000).toFixed(1)}만명(${(data.disabledRatio || 5.2).toFixed(1)}%)으로, 활동지원과 일자리 확대가 필요합니다.`,
+            basic_livelihood: `${regionName}의 기초생활수급자는 ${(data.basicLivelihood/10000).toFixed(1)}만명(${(data.basicLivelihoodRatio || 4.6).toFixed(1)}%)으로, 빈곤 탈출 지원과 자활 연계가 필요합니다.`
+        };
+        return summaries[dataType] || summaries.all;
+    },
+    
+    getAIRisks(data, dataType) {
+        const riskLists = {
+            all: ['고령화 가속으로 사회보장 비용 급증', '생산가능인구 감소로 경제활력 저하', '1인가구 증가로 고독사 위험 확대', '세대간 갈등 심화 우려'],
+            children: ['저출산으로 학교 통폐합 불가피', '아동돌봄 인프라 과잉 우려', '취약계층 아동 지원 사각지대', '청소년 정신건강 문제 증가'],
+            youth: ['청년 일자리 미스매치 심화', '주거비 부담으로 자립 지연', '결혼·출산 기피로 저출산 악순환', '청년층 지방 이탈 가속화'],
+            middle: ['가족돌봄 부담으로 경력단절', '노후준비 부족으로 빈곤 위험', '중년 우울증·번아웃 증가', '고용불안정으로 조기 퇴직 증가'],
+            elderly: ['독거노인 고독사 위험 증가', '치매 환자 급증으로 돌봄 부담', '노인빈곤율 OECD 최고 수준', '의료·요양 비용 급증'],
+            single: ['사회적 고립으로 우울증 증가', '경제적 불안정 심화', '고독사 사각지대 확대', '주거·돌봄 지원 체계 미비'],
+            multicultural: ['언어장벽으로 사회통합 지연', '다문화가정 자녀 학습 부진', '이중문화 정체성 혼란', '취업 차별로 경제적 어려움'],
+            disabled: ['활동지원 인력 부족', '장애인 일자리 부족', '이동권 보장 미흡', '장애인 학대·방임 우려'],
+            basic_livelihood: ['빈곤의 대물림 우려', '근로빈곤층 증가', '복지 사각지대 존재', '자활 의지 저하 우려']
+        };
+        return (riskLists[dataType] || riskLists.all).map(r => `<li>${r}</li>`).join('');
+    },
+    
+    getAIActions(data, dataType) {
+        const actionLists = {
+            all: ['전 세대 맞춤형 복지 전달체계 구축', 'AI 기반 복지 수요 예측 시스템 도입', '세대통합 프로그램 활성화', '지역사회 돌봄 네트워크 강화'],
+            children: ['온종일돌봄체계 확대', '아동학대 조기발견 시스템 강화', '취약계층 아동 맞춤 지원', '청소년 활동 공간 확충'],
+            youth: ['청년 일자리 창출 및 역량 강화', '청년 주거비 지원 확대', '청년정책 참여 플랫폼 구축', '청년 정신건강 지원 강화'],
+            middle: ['가족돌봄휴가 확대', '중장년 재취업 지원 강화', '노후준비 교육 프로그램 확대', '건강검진 확대 및 관리'],
+            elderly: ['재가돌봄서비스 확충', '치매안심센터 기능 강화', '노인일자리 및 사회참여 확대', '노인학대 예방 체계 강화'],
+            single: ['고독사 예방 안부확인 서비스', '긴급돌봄 네트워크 구축', '1인가구 커뮤니티 프로그램', '주거안정 지원 강화'],
+            multicultural: ['한국어 교육 확대', '다문화가족지원센터 서비스 강화', '이중언어 환경 조성 지원', '결혼이민자 취업연계 강화'],
+            disabled: ['활동지원서비스 확대', '장애인 고용 촉진 지원', '이동지원 서비스 강화', '장애인 권익옹호 체계 구축'],
+            basic_livelihood: ['자활프로그램 다양화', '긴급복지지원 확대', '교육비·의료비 지원 강화', '주거급여 현실화']
+        };
+        return (actionLists[dataType] || actionLists.all).map(a => `<li>${a}</li>`).join('');
+    },
+    
+    getAIForecast(data, regionName, dataType) {
+        const forecasts = {
+            all: `${regionName}은(는) 2030년까지 초고령사회가 심화될 전망이며, 전 세대 맞춤형 복지 투자 없이는 사회적 비용이 급증할 것으로 예상됩니다.`,
+            children: `저출산 추세가 지속될 경우, ${regionName}의 아동 인구는 향후 10년간 추가 20% 감소가 예상되며, 아동복지 인프라 재편이 불가피합니다.`,
+            youth: `일자리·주거 문제 해결 없이는 청년 유출이 가속화되어, ${regionName}의 지역 활력이 크게 저하될 전망입니다.`,
+            middle: `중장년층의 돌봄 부담 경감과 노후준비 지원 없이는 향후 노인빈곤 문제가 심화될 것으로 예상됩니다.`,
+            elderly: `${regionName}은(는) 2030년경 고령화율 25% 돌파가 예상되며, 돌봄 인력 및 시설 확충이 시급합니다.`,
+            single: `1인가구 증가 추세가 지속될 경우, 2030년에는 전체 가구의 40%를 넘어설 것으로 전망됩니다.`,
+            multicultural: `다문화가구 지원 체계 강화를 통해 사회통합을 이루면, 지역 활력 제고에 기여할 수 있습니다.`,
+            disabled: `장애인 자립 지원 강화로 사회참여를 확대하면, 복지비용 절감과 사회통합 효과를 얻을 수 있습니다.`,
+            basic_livelihood: `자활 프로그램 내실화와 취업연계 강화로 빈곤 탈출 성공률을 높이는 것이 핵심입니다.`
+        };
+        return forecasts[dataType] || forecasts.all;
     },
     
     generateNationalDistribution(total) {
@@ -1301,190 +1558,117 @@ const UI = {
         };
         
         this.updateStats(dataForStats);
-        this.updatePyramid();
         
-        // 전 세대 클러스터 차트
-        ChartManager.initCluster({
-            children: d.children,
-            productive: d.youth + d.middle,
-            youngOld: d.youngOld,
-            oldOld: d.oldOld
-        });
-        
-        // 데이터 유형에 따른 추세 차트
-        const metricMap = {
-            all: 'totalPop',
-            children: 'childRatio',
-            youth: 'youthRatio',
-            middle: 'totalPop',
-            elderly: 'elderlyRatio',
-            single: 'singleRatio',
-            multicultural: 'totalPop',
-            disabled: 'totalPop',
-            basic_livelihood: 'totalPop'
-        };
-        this.updateTrendChart(metricMap[DataStore.currentDataType] || 'totalPop');
-        
-        // Target card 업데이트
-        this.updateTargetCard(dataForStats);
+        // 새로운 차트 시스템
+        this.initAllCharts(dataForStats, region.name);
         
         this.updateRankings();
+        this.updateAIReport(dataForStats, region.name);
     },
     
     updateStats(data) {
         const dataType = DataStore.currentDataType;
-        
-        // 긴급도 점수는 항상 표시
-        const urgencyScore = document.getElementById('urgencyScore');
-        if (urgencyScore) urgencyScore.textContent = data.urgency || 50;
-        
-        const urgencyMeter = document.getElementById('urgencyMeter');
-        if (urgencyMeter) urgencyMeter.style.width = (data.urgency || 50) + '%';
-        
-        // 데이터 유형별 Stats 카드 업데이트
         const statsConfig = this.getStatsConfig(dataType, data);
         
-        // Stat 1
-        const stat1Icon = document.getElementById('stat1Icon');
-        const stat1Value = document.getElementById('stat1Value');
-        const stat1Label = document.getElementById('stat1Label');
-        if (stat1Icon) stat1Icon.textContent = statsConfig.stat1.icon;
-        if (stat1Value) stat1Value.textContent = statsConfig.stat1.value;
-        if (stat1Label) stat1Label.textContent = statsConfig.stat1.label;
+        // Stat 1: 총 인구 / 대상 인구
+        this.setStatCard(1, statsConfig.stat1);
         
-        // Stat 2
-        const stat2Icon = document.getElementById('stat2Icon');
-        const stat2Value = document.getElementById('stat2Value');
-        const stat2Label = document.getElementById('stat2Label');
-        if (stat2Icon) stat2Icon.textContent = statsConfig.stat2.icon;
-        if (stat2Value) stat2Value.textContent = statsConfig.stat2.value;
-        if (stat2Label) stat2Label.textContent = statsConfig.stat2.label;
+        // Stat 2: 주요 지표
+        this.setStatCard(2, statsConfig.stat2);
         
-        // Stat 3
-        const stat3Icon = document.getElementById('stat3Icon');
-        const stat3Value = document.getElementById('stat3Value');
-        const stat3Label = document.getElementById('stat3Label');
-        const stat3Badge = document.getElementById('stat3Badge');
-        if (stat3Icon) stat3Icon.textContent = statsConfig.stat3.icon;
-        if (stat3Value) stat3Value.textContent = statsConfig.stat3.value;
-        if (stat3Label) stat3Label.textContent = statsConfig.stat3.label;
-        if (stat3Badge) {
-            stat3Badge.textContent = statsConfig.stat3.badge;
-            stat3Badge.className = 'stat-badge ' + (statsConfig.stat3.badgeClass || '');
+        // Stat 3: 비율
+        this.setStatCard(3, statsConfig.stat3);
+        
+        // Stat 4: 긴급도
+        const stat4Value = document.getElementById('stat4Value');
+        const stat4Label = document.getElementById('stat4Label');
+        const stat4Sub = document.getElementById('stat4Sub');
+        if (stat4Value) stat4Value.textContent = (data.urgency || 50).toFixed(1);
+        if (stat4Label) stat4Label.textContent = '복지 긴급도';
+        if (stat4Sub) stat4Sub.textContent = data.urgency >= 70 ? '⚠️ 높음' : data.urgency >= 40 ? '보통' : '양호';
+    },
+    
+    setStatCard(num, config) {
+        const icon = document.getElementById(`stat${num}Icon`);
+        const value = document.getElementById(`stat${num}Value`);
+        const label = document.getElementById(`stat${num}Label`);
+        const sub = document.getElementById(`stat${num}Sub`);
+        const change = document.getElementById(`stat${num}Change`);
+        
+        if (icon) icon.textContent = config.icon || '';
+        if (value) value.textContent = config.value || '-';
+        if (label) label.textContent = config.label || '';
+        if (sub) sub.textContent = config.sub || '';
+        if (change && config.change) {
+            change.textContent = config.change;
+            change.className = `stat-change ${config.changeDir || 'down'}`;
         }
     },
     
     getStatsConfig(dataType, data) {
+        const formatPop = (n) => {
+            if (!n) return '-';
+            if (n >= 10000000) return (n / 10000000).toFixed(1) + '천만';
+            if (n >= 10000) return (n / 10000).toFixed(1) + '만';
+            if (n >= 1000) return (n / 1000).toFixed(1) + 'k';
+            return n.toLocaleString();
+        };
+        
         switch (dataType) {
             case 'children':
                 return {
-                    stat1: { icon: '👶', value: data.children?.toLocaleString() || '-', label: '아동·청소년 (0-18)' },
-                    stat2: { icon: '⚠️', value: data.childrenVulnerable?.toLocaleString() || '-', label: '취약계층 아동' },
-                    stat3: { 
-                        icon: '📊', 
-                        value: (data.childrenRatio?.toFixed(1) || '-') + '%', 
-                        label: '아동 비율',
-                        badge: data.childrenRatio >= 18 ? '양호' : data.childrenRatio >= 14 ? '저출산' : '심각',
-                        badgeClass: data.childrenRatio < 14 ? 'critical' : ''
-                    }
+                    stat1: { icon: '👥', value: formatPop(data.totalPopulation), label: '총 인구 (추계)', sub: '전체 인구' },
+                    stat2: { icon: '👶', value: formatPop(data.children), label: '아동·청소년 수', sub: '0-18세', change: '▼ 2.1%', changeDir: 'down' },
+                    stat3: { icon: '📊', value: (data.childrenRatio?.toFixed(1) || '-') + '%', label: '아동 비율', sub: data.childrenRatio < 15 ? '저출산 심각' : '전국 평균' }
                 };
             case 'youth':
                 return {
-                    stat1: { icon: '🧑', value: data.youth?.toLocaleString() || '-', label: '청년 (19-34)' },
-                    stat2: { icon: '💼', value: data.youthUnemployed?.toLocaleString() || '-', label: '청년 실업자(추정)' },
-                    stat3: { 
-                        icon: '📊', 
-                        value: (data.youthRatio?.toFixed(1) || '-') + '%', 
-                        label: '청년 비율',
-                        badge: data.youthRatio >= 18 ? '양호' : data.youthRatio >= 15 ? '감소중' : '유출심각',
-                        badgeClass: data.youthRatio < 15 ? 'critical' : ''
-                    }
+                    stat1: { icon: '👥', value: formatPop(data.totalPopulation), label: '총 인구 (추계)', sub: '전체 인구' },
+                    stat2: { icon: '🧑', value: formatPop(data.youth), label: '청년 수', sub: '19-34세', change: '▼ 1.8%', changeDir: 'down' },
+                    stat3: { icon: '📊', value: (data.youthRatio?.toFixed(1) || '-') + '%', label: '청년 비율', sub: data.youthRatio < 16 ? '청년 유출' : '전국 평균' }
                 };
             case 'middle':
                 return {
-                    stat1: { icon: '👨‍💼', value: data.middle?.toLocaleString() || '-', label: '중장년 (35-64)' },
-                    stat2: { icon: '🏠', value: data.middleCaregiver?.toLocaleString() || '-', label: '가족돌봄자(추정)' },
-                    stat3: { 
-                        icon: '📊', 
-                        value: (data.middleRatio?.toFixed(1) || '-') + '%', 
-                        label: '중장년 비율',
-                        badge: data.middleRatio >= 45 ? '높음' : data.middleRatio >= 38 ? '보통' : '낮음',
-                        badgeClass: ''
-                    }
+                    stat1: { icon: '👥', value: formatPop(data.totalPopulation), label: '총 인구 (추계)', sub: '전체 인구' },
+                    stat2: { icon: '👨‍💼', value: formatPop(data.middle), label: '중장년 수', sub: '35-64세', change: '▲ 0.5%', changeDir: 'up' },
+                    stat3: { icon: '📊', value: (data.middleRatio?.toFixed(1) || '-') + '%', label: '중장년 비율', sub: '핵심 생산인구' }
                 };
             case 'elderly':
                 return {
-                    stat1: { icon: '👴', value: data.elderly?.toLocaleString() || '-', label: '노인 (65+)' },
-                    stat2: { icon: '🏠', value: data.elderlyAlone?.toLocaleString() || '-', label: '독거노인' },
-                    stat3: { 
-                        icon: '📈', 
-                        value: (data.elderlyRatio?.toFixed(1) || '-') + '%', 
-                        label: '고령화율',
-                        badge: data.elderlyRatio >= 20 ? '초고령' : data.elderlyRatio >= 14 ? '고령사회' : '고령화',
-                        badgeClass: data.elderlyRatio >= 20 ? 'critical' : ''
-                    }
+                    stat1: { icon: '👥', value: formatPop(data.totalPopulation), label: '총 인구 (추계)', sub: '전체 인구' },
+                    stat2: { icon: '👴', value: formatPop(data.elderly || (data.youngOld + data.oldOld)), label: '노인 인구', sub: '65세 이상', change: '▲ 4.2%', changeDir: 'up' },
+                    stat3: { icon: '📊', value: (data.elderlyRatio?.toFixed(1) || '-') + '%', label: '고령화율', sub: data.elderlyRatio >= 20 ? '초고령사회' : '고령사회' }
                 };
             case 'single':
                 return {
-                    stat1: { icon: '🏠', value: data.singleHousehold?.toLocaleString() || '-', label: '1인가구 수' },
-                    stat2: { icon: '👥', value: data.totalHouseholds?.toLocaleString() || '-', label: '총 가구수' },
-                    stat3: { 
-                        icon: '📊', 
-                        value: (data.singleHouseholdRatio?.toFixed(1) || '-') + '%', 
-                        label: '1인가구 비율',
-                        badge: data.singleHouseholdRatio >= 35 ? '높음' : data.singleHouseholdRatio >= 30 ? '보통' : '낮음',
-                        badgeClass: data.singleHouseholdRatio >= 35 ? 'critical' : ''
-                    }
+                    stat1: { icon: '👥', value: formatPop(data.totalHouseholds), label: '총 가구수', sub: '전체 가구' },
+                    stat2: { icon: '🏠', value: formatPop(data.singleHousehold), label: '1인가구', sub: '단독 거주', change: '▲ 3.5%', changeDir: 'up' },
+                    stat3: { icon: '📊', value: (data.singleHouseholdRatio?.toFixed(1) || '-') + '%', label: '1인가구 비율', sub: data.singleHouseholdRatio >= 35 ? '급증 추세' : '증가 중' }
                 };
             case 'multicultural':
                 return {
-                    stat1: { icon: '🌍', value: data.multicultural?.toLocaleString() || '-', label: '다문화가구' },
-                    stat2: { icon: '👥', value: data.totalHouseholds?.toLocaleString() || '-', label: '총 가구수' },
-                    stat3: { 
-                        icon: '📊', 
-                        value: (data.multiculturalRatio?.toFixed(1) || '-') + '%', 
-                        label: '다문화 비율',
-                        badge: data.multiculturalRatio >= 2 ? '높음' : '보통',
-                        badgeClass: ''
-                    }
+                    stat1: { icon: '👥', value: formatPop(data.totalHouseholds), label: '총 가구수', sub: '전체 가구' },
+                    stat2: { icon: '🌍', value: formatPop(data.multicultural), label: '다문화가구', sub: '결혼이민 등', change: '▲ 2.1%', changeDir: 'up' },
+                    stat3: { icon: '📊', value: (data.multiculturalRatio?.toFixed(1) || '-') + '%', label: '다문화 비율', sub: '사회통합 대상' }
                 };
             case 'disabled':
                 return {
-                    stat1: { icon: '♿', value: data.disabled?.toLocaleString() || '-', label: '등록 장애인' },
-                    stat2: { icon: '👥', value: data.totalPopulation?.toLocaleString() || '-', label: '총 인구' },
-                    stat3: { 
-                        icon: '📊', 
-                        value: (data.disabledRatio?.toFixed(1) || '-') + '%', 
-                        label: '장애인 비율',
-                        badge: data.disabledRatio >= 6 ? '높음' : '보통',
-                        badgeClass: data.disabledRatio >= 6 ? 'critical' : ''
-                    }
+                    stat1: { icon: '👥', value: formatPop(data.totalPopulation), label: '총 인구 (추계)', sub: '전체 인구' },
+                    stat2: { icon: '♿', value: formatPop(data.disabled), label: '등록 장애인', sub: '복지카드 소지', change: '▲ 0.8%', changeDir: 'up' },
+                    stat3: { icon: '📊', value: (data.disabledRatio?.toFixed(1) || '-') + '%', label: '장애인 비율', sub: '전국 평균 5.2%' }
                 };
             case 'basic_livelihood':
                 return {
-                    stat1: { icon: '💰', value: data.basicLivelihood?.toLocaleString() || '-', label: '수급자 수' },
-                    stat2: { icon: '👥', value: data.totalPopulation?.toLocaleString() || '-', label: '총 인구' },
-                    stat3: { 
-                        icon: '📊', 
-                        value: (data.basicLivelihoodRatio?.toFixed(1) || '-') + '%', 
-                        label: '수급률',
-                        badge: data.basicLivelihoodRatio >= 6 ? '높음' : data.basicLivelihoodRatio >= 4 ? '보통' : '낮음',
-                        badgeClass: data.basicLivelihoodRatio >= 6 ? 'critical' : ''
-                    }
+                    stat1: { icon: '👥', value: formatPop(data.totalPopulation), label: '총 인구 (추계)', sub: '전체 인구' },
+                    stat2: { icon: '💰', value: formatPop(data.basicLivelihood), label: '수급자 수', sub: '생계·의료급여', change: '▲ 1.2%', changeDir: 'up' },
+                    stat3: { icon: '📊', value: (data.basicLivelihoodRatio?.toFixed(1) || '-') + '%', label: '수급률', sub: data.basicLivelihoodRatio >= 5 ? '빈곤 위험' : '전국 평균' }
                 };
             case 'all':
             default:
-                // 전체 인구 현황 (전 세대 분포 요약)
                 return {
-                    stat1: { icon: '👥', value: data.totalPopulation?.toLocaleString() || '-', label: '총 인구' },
-                    stat2: { icon: '🏠', value: data.totalHouseholds?.toLocaleString() || '-', label: '총 가구수' },
-                    stat3: { 
-                        icon: '📊', 
-                        value: `${(data.childrenRatio || 0).toFixed(0)}/${(data.youthRatio || 0).toFixed(0)}/${(data.middleRatio || 0).toFixed(0)}/${(data.elderlyRatio || 0).toFixed(0)}`, 
-                        label: '세대 비율 (아/청/중/노)',
-                        badge: '전 세대 분석',
-                        badgeClass: 'primary'
-                    }
+                    stat1: { icon: '👥', value: formatPop(data.totalPopulation), label: '총 인구 (추계)', sub: '전국 기준' },
+                    stat2: { icon: '👶', value: formatPop(data.children), label: '기준 인구 수', sub: '아동·청소년', change: '▼ 2.1%', changeDir: 'down' },
+                    stat3: { icon: '📊', value: (data.childrenRatio?.toFixed(1) || '-') + '%', label: '비율', sub: '전국 평균 대비' }
                 };
         }
     },
@@ -1735,7 +1919,7 @@ const UI = {
     },
     
     updateRankings() {
-        const rankings = DataStore.getRankings(8);
+        const rankings = DataStore.getRankings(6);
         const container = document.getElementById('rankingList');
         if (!container) return;
         
@@ -1744,13 +1928,9 @@ const UI = {
                 <span class="ranking-rank">${i + 1}</span>
                 <div class="ranking-info">
                     <span class="ranking-name">${item.name}</span>
-                    <span class="ranking-meta">고령화율 ${item.agingRatio.toFixed(1)}%</span>
+                    <span class="ranking-meta">긴급도 ${item.score}점</span>
                 </div>
-                <span class="ranking-score">${item.score}</span>
-                <div class="ranking-bar">
-                    <div class="ranking-bar-fill" style="width:${item.score}%; 
-                        background:${item.score >= 80 ? '#dc2626' : item.score >= 60 ? '#f97316' : item.score >= 40 ? '#fbbf24' : '#34d399'}"></div>
-                </div>
+                <span class="ranking-value">${item.agingRatio.toFixed(1)}%</span>
             </div>
         `).join('');
         
@@ -1776,27 +1956,76 @@ const UI = {
     },
     
     generateReport() {
-        const region = DataStore.currentRegion;
-        if (!region) {
-            this.showToast('먼저 지역을 선택해주세요');
-            return;
-        }
+        this.showLoading();
         
-        const yearData = region.data[DataStore.currentYear];
-        const report = ReportGenerator.generate(region, yearData);
+        setTimeout(() => {
+            const region = DataStore.currentRegion;
+            const regionName = region ? region.name : '전국';
+            const yearData = region ? region.data[DataStore.currentYear] : this.getNationalData();
+            
+            this.updateAIReport(yearData, regionName);
+            
+            const copyBtn = document.getElementById('copyReportBtn');
+            if (copyBtn) copyBtn.style.display = 'block';
+            
+            this.hideLoading();
+            this.showToast('AI 분석이 생성되었습니다');
+        }, 1000);
+    },
+    
+    getNationalData() {
+        let total = 0, children = 0, youth = 0, middle = 0, elderly = 0;
+        let totalHouseholds = 0, singleHousehold = 0, multicultural = 0;
+        let elderlyAlone = 0, disabled = 0, basicLivelihood = 0;
         
-        const reportEl = document.getElementById('aiReport');
-        if (reportEl) reportEl.innerHTML = report;
+        DataStore.getSidoList().forEach(sido => {
+            const region = DataStore.getRegion(sido.code);
+            if (region) {
+                const d = region.data[DataStore.currentYear];
+                total += d.totalPopulation;
+                children += d.children || 0;
+                youth += d.youth || 0;
+                middle += d.middle || 0;
+                elderly += d.elderly || 0;
+                totalHouseholds += d.totalHouseholds || 0;
+                singleHousehold += d.singleHousehold || 0;
+                multicultural += d.multicultural || 0;
+                elderlyAlone += d.elderlyAlone || 0;
+                disabled += d.disabled || 0;
+                basicLivelihood += d.basicLivelihood || 0;
+            }
+        });
         
-        const copyBtn = document.getElementById('copyReportBtn');
-        if (copyBtn) copyBtn.style.display = 'block';
+        return {
+            totalPopulation: total,
+            totalHouseholds,
+            children, childrenRatio: (children / total * 100),
+            youth, youthRatio: (youth / total * 100),
+            middle, middleRatio: (middle / total * 100),
+            elderly, elderlyRatio: (elderly / total * 100),
+            singleHousehold, singleHouseholdRatio: (singleHousehold / totalHouseholds * 100),
+            multicultural, multiculturalRatio: (multicultural / totalHouseholds * 100),
+            elderlyAlone, disabled, basicLivelihood,
+            basicLivelihoodRatio: (basicLivelihood / total * 100),
+            disabledRatio: (disabled / total * 100)
+        };
     },
     
     copyReport() {
-        const reportEl = document.getElementById('aiReport');
-        if (!reportEl) return;
+        const sections = ['aiReportSummary', 'aiReportRisks', 'aiReportActions', 'aiReportForecast'];
+        let text = '=== SODAPOP AI 분석 보고서 ===\n\n';
         
-        const text = reportEl.innerText;
+        const summary = document.getElementById('aiReportSummary');
+        if (summary) text += '【종합 현안】\n' + summary.innerText + '\n\n';
+        
+        const risks = document.getElementById('aiReportRisks');
+        if (risks) text += '【주요 위험요소】\n' + risks.innerText + '\n\n';
+        
+        const actions = document.getElementById('aiReportActions');
+        if (actions) text += '【필요한 복지 대책】\n' + actions.innerText + '\n\n';
+        
+        const forecast = document.getElementById('aiReportForecast');
+        if (forecast) text += '【향후 전망】\n' + forecast.innerText + '\n';
         
         if (navigator.clipboard && navigator.clipboard.writeText) {
             navigator.clipboard.writeText(text).then(() => {
