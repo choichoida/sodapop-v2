@@ -59,45 +59,58 @@ export default async function handler(req, res) {
   // 키워드에서 생애주기 자동 추출 (life 파라미터가 없을 때)
   const lifeCode = life || extractLifeCode(keyword);
 
-  const params = new URLSearchParams({ serviceKey, pageNo: page, numOfRows: size });
-  if (keyword)     params.append('srchKeyword', keyword);
-  if (lifeCode)    params.append('lifeArray', lifeCode);
-  if (siCode)      params.append('rsdAreaSiCode', siCode);
-  if (sigunguCode) params.append('rsdAreaSigunguCode', sigunguCode);
+  // 공공데이터포털 키는 이미 URL인코딩 상태로 발급됨 → 이중 인코딩 방지를 위해 디코딩 후 사용
+  const decodedKey = decodeURIComponent(serviceKey);
+
+  // URL을 수동으로 구성해 serviceKey 인코딩 제어
+  let url = `${WELFARE_BASE}/getWlfareInfoList?serviceKey=${decodedKey}`;
+  url += `&pageNo=${page}&numOfRows=${size}&_type=json`;
+  if (keyword)     url += `&srchKeyword=${encodeURIComponent(keyword)}`;
+  if (lifeCode)    url += `&lifeArray=${encodeURIComponent(lifeCode)}`;
+  if (siCode)      url += `&rsdAreaSiCode=${encodeURIComponent(siCode)}`;
+  if (sigunguCode) url += `&rsdAreaSigunguCode=${encodeURIComponent(sigunguCode)}`;
 
   try {
-    const response = await fetch(
-      `${WELFARE_BASE}/getWlfareInfoList?${params}`,
-      { headers: { Accept: 'application/json' } }
-    );
+    const response = await fetch(url, { headers: { Accept: 'application/json' } });
 
-    if (!response.ok) {
-      throw new Error(`복지서비스 API 오류: ${response.status}`);
+    const rawText = await response.text();
+
+    // 응답이 XML이거나 에러인 경우를 위해 텍스트로 먼저 수신
+    let raw;
+    try {
+      raw = JSON.parse(rawText);
+    } catch {
+      console.error('Non-JSON response:', rawText.slice(0, 300));
+      throw new Error(`API가 JSON이 아닌 응답을 반환했습니다. 상태: ${response.status}`);
     }
 
-    const raw = await response.json();
+    // 공공데이터포털 에러 응답 처리
+    if (raw?.response?.header?.resultCode && raw.response.header.resultCode !== '00') {
+      throw new Error(`API 오류 코드 ${raw.response.header.resultCode}: ${raw.response.header.resultMsg}`);
+    }
 
-    // 공공데이터포털 응답 구조 정규화
-    const items = raw?.response?.body?.items?.item || raw?.items?.item || [];
-    const totalCount = raw?.response?.body?.totalCount ?? raw?.totalCount ?? 0;
+    // 응답 구조 정규화 (공공데이터포털 표준 구조)
+    const body = raw?.response?.body || raw;
+    const rawItems = body?.items?.item || body?.items || [];
+    const totalCount = body?.totalCount ?? 0;
 
-    const list = Array.isArray(items) ? items : [items];
+    const list = Array.isArray(rawItems) ? rawItems : (rawItems ? [rawItems] : []);
 
     return res.status(200).json({
       success: true,
-      totalCount,
+      totalCount: Number(totalCount),
       page: Number(page),
       size: Number(size),
       keyword,
       lifeCode,
       items: list.map(item => ({
-        id:       item.servId   || '',
-        name:     item.servNm   || '',
-        summary:  item.servDgst || '',
-        ministry: item.jurMnofNm || item.jurOrgNm || '',
+        id:       item.servId        || '',
+        name:     item.servNm        || '',
+        summary:  item.servDgst      || '',
+        ministry: item.jurMnofNm     || item.jurOrgNm || '',
         target:   item.trgterIndvdlNm || '',
-        life:     item.lifeNmArray || '',
-        link:     item.servDtlLink || `https://www.bokjiro.go.kr/ssis-tbu/twataa/wlfareInfo/moveTWAT52011M.do?wlfareInfoId=${item.servId}`
+        life:     item.lifeNmArray   || '',
+        link:     item.servDtlLink   || `https://www.bokjiro.go.kr/ssis-tbu/twataa/wlfareInfo/moveTWAT52011M.do?wlfareInfoId=${item.servId}`
       }))
     });
 
