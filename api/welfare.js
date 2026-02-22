@@ -39,10 +39,10 @@ export default async function handler(req, res) {
 
   Object.entries(corsHeaders).forEach(([k, v]) => res.setHeader(k, v));
 
-  const serviceKey = process.env.WELFARE_API_KEY;
+  const serviceKey = process.env.MOHW_KEY;
   if (!serviceKey) {
     return res.status(500).json({
-      error: 'WELFARE_API_KEY가 설정되지 않았습니다.',
+      error: 'MOHW_KEY가 설정되지 않았습니다.',
       code: 'MISSING_API_KEY'
     });
   }
