@@ -967,3 +967,281 @@ body {
         border: 1px solid var(--border-color);
     }
 }
+
+/* ============================================
+   복지서비스 자연어 검색
+   ============================================ */
+.welfare-search-section {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: 16px;
+    padding: 24px 28px;
+    margin-bottom: 20px;
+    box-shadow: var(--shadow-card);
+}
+
+.welfare-search-header {
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+    margin-bottom: 18px;
+}
+
+.welfare-search-icon {
+    font-size: 28px;
+    line-height: 1;
+    margin-top: 2px;
+}
+
+.welfare-search-title {
+    font-size: 17px;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin: 0 0 4px 0;
+}
+
+.welfare-search-desc {
+    font-size: 13px;
+    color: var(--text-secondary);
+    margin: 0;
+    line-height: 1.5;
+}
+
+.welfare-search-bar {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 14px;
+}
+
+.welfare-search-input {
+    flex: 1;
+    padding: 11px 16px;
+    border: 1.5px solid var(--border-color);
+    border-radius: 10px;
+    font-size: 14px;
+    font-family: var(--font-sans);
+    color: var(--text-primary);
+    background: var(--bg-input);
+    outline: none;
+    transition: border-color 0.2s;
+}
+
+.welfare-search-input:focus {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.12);
+}
+
+.welfare-search-input::placeholder {
+    color: var(--text-muted);
+}
+
+.welfare-search-btn {
+    padding: 11px 22px;
+    background: var(--primary);
+    color: white;
+    border: none;
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 600;
+    font-family: var(--font-sans);
+    cursor: pointer;
+    transition: background 0.2s, transform 0.1s;
+    white-space: nowrap;
+}
+
+.welfare-search-btn:hover  { background: var(--primary-dark); }
+.welfare-search-btn:active { transform: scale(0.97); }
+.welfare-search-btn:disabled {
+    background: var(--text-muted);
+    cursor: not-allowed;
+}
+
+.welfare-quick-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.quick-tag {
+    padding: 5px 13px;
+    background: var(--primary-bg);
+    color: var(--primary-dark);
+    border: 1px solid rgba(59, 130, 246, 0.25);
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s;
+    user-select: none;
+}
+
+.quick-tag:hover {
+    background: var(--primary);
+    color: white;
+    border-color: var(--primary);
+}
+
+/* 검색 결과 패널 */
+.welfare-results-panel {
+    margin-top: 20px;
+    border-top: 1px solid var(--border-light);
+    padding-top: 18px;
+}
+
+.welfare-results-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 14px;
+}
+
+.welfare-results-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.welfare-results-count {
+    font-size: 12px;
+    color: var(--text-secondary);
+    background: var(--bg-hover);
+    padding: 3px 10px;
+    border-radius: 12px;
+}
+
+.welfare-results-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+/* 결과 카드 */
+.welfare-card {
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 16px 18px;
+    background: var(--bg-card);
+    transition: box-shadow 0.2s, border-color 0.2s;
+}
+
+.welfare-card:hover {
+    border-color: var(--primary-light);
+    box-shadow: var(--shadow-sm);
+}
+
+.welfare-card-top {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 8px;
+}
+
+.welfare-card-name {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--text-primary);
+    line-height: 1.4;
+    flex: 1;
+}
+
+.welfare-card-link {
+    font-size: 12px;
+    color: var(--primary);
+    text-decoration: none;
+    white-space: nowrap;
+    font-weight: 500;
+    border: 1px solid var(--primary-light);
+    padding: 3px 10px;
+    border-radius: 6px;
+    transition: background 0.15s;
+}
+
+.welfare-card-link:hover {
+    background: var(--primary-bg);
+}
+
+.welfare-card-summary {
+    font-size: 13px;
+    color: var(--text-secondary);
+    line-height: 1.55;
+    margin-bottom: 10px;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.welfare-card-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+.welfare-meta-tag {
+    font-size: 11px;
+    padding: 2px 9px;
+    border-radius: 10px;
+    font-weight: 500;
+}
+
+.welfare-meta-tag.ministry {
+    background: #f0fdf4;
+    color: #16a34a;
+}
+
+.welfare-meta-tag.life {
+    background: #eff6ff;
+    color: #2563eb;
+}
+
+.welfare-meta-tag.target {
+    background: #fdf4ff;
+    color: #9333ea;
+}
+
+/* 로딩 / 에러 / 빈 결과 */
+.welfare-loading,
+.welfare-error,
+.welfare-empty {
+    text-align: center;
+    padding: 32px 16px;
+    color: var(--text-secondary);
+    font-size: 14px;
+}
+
+.welfare-loading::before { content: '⏳ '; }
+.welfare-error   { color: var(--color-danger); }
+.welfare-error::before { content: '⚠️ '; }
+.welfare-empty::before { content: '📭 '; }
+
+/* 페이저 */
+.welfare-results-pager {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+    margin-top: 18px;
+    padding-top: 14px;
+    border-top: 1px solid var(--border-light);
+}
+
+.pager-btn {
+    padding: 7px 18px;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    background: var(--bg-card);
+    color: var(--text-primary);
+    font-size: 13px;
+    font-family: var(--font-sans);
+    cursor: pointer;
+    transition: background 0.15s;
+}
+
+.pager-btn:hover:not(:disabled) { background: var(--bg-hover); }
+.pager-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+.pager-info {
+    font-size: 13px;
+    color: var(--text-secondary);
+}
