@@ -2240,69 +2240,91 @@ const UI = {
 // ============================================
 const WelfareSearch = {
     currentPage: 1,
-    currentKeyword: '',
-    currentLifeCode: '',
-    pageSize: 8,
+    currentQuery: '',
+    pageSize: 10,
 
-    // 자연어 쿼리에서 검색 키워드 추출
-    parseQuery(text) {
-        // 지역명(시/구/동) 제거 후 복지 키워드 추출
-        const regionPattern = /([가-힣]+[시군구읍면동로가])\s*/g;
-        const cleaned = text.replace(regionPattern, '').trim();
+    // 생애주기 코드 매핑
+    LIFE_CODES: {
+        '영유아': '001', '아동': '002', '어린이': '002',
+        '청소년': '003', '청년': '004', '중장년': '005',
+        '노인': '006', '노년': '006', '어르신': '006',
+        '임산부': '007', '임신': '007', '출산': '007'
+    },
+    // 가구유형 코드 매핑 (trgterIndvdlArray)
+    TRGT_CODES: {
+        '다문화': '010', '탈북': '010',
+        '다자녀': '020',
+        '보훈': '030', '국가유공': '030',
+        '장애인': '040', '장애': '040',
+        '저소득': '050', '기초수급': '050', '수급자': '050', '차상위': '050',
+        '한부모': '060', '조손': '060'
+    },
+    // 관심주제 코드 매핑 (intrsThemaArray)
+    THEME_CODES: {
+        '건강': '010', '의료': '010', '병원': '010',
+        '정신': '020', '우울': '020',
+        '생활': '030', '생계': '030',
+        '주거': '040', '임대': '040',
+        '취업': '050', '일자리': '050', '고용': '050',
+        '문화': '060', '여가': '060',
+        '안전': '070', '위기': '070', '긴급': '070',
+        '보육': '090', '어린이집': '090', '육아': '090',
+        '교육': '100', '학교': '100',
+        '입양': '110', '위탁': '110',
+        '돌봄': '120', '요양': '120', '간병': '120',
+        '금융': '130', '대출': '130', '서민금융': '130',
+        '법률': '140',
+        '에너지': '160', '전기': '160', '가스': '160'
+    },
 
-        // 생애주기 코드 매핑
-        const lifeCodes = {
-            '영유아': '001', '아동': '002', '어린이': '002',
-            '청소년': '003', '청년': '004', '중장년': '005',
-            '노인': '006', '노년': '006', '어르신': '006',
-            '임산부': '007', '임신': '007', '출산': '007',
-            '한부모': '008', '다문화': '008'
-        };
-
-        let lifeCode = '';
-        for (const [keyword, code] of Object.entries(lifeCodes)) {
-            if (text.includes(keyword)) { lifeCode = code; break; }
+    extractCode(text, map) {
+        for (const [k, v] of Object.entries(map)) {
+            if (text.includes(k)) return v;
         }
+        return '';
+    },
 
-        // 검색 키워드: 지역명 제거 후 남은 텍스트 또는 원본 텍스트
-        const keyword = (cleaned || text)
-            .replace(/현황|조회|검색|관련|서비스|복지/g, '')
+    // 자연어 쿼리에서 검색 파라미터 추출
+    parseQuery(text) {
+        const lifeCode  = this.extractCode(text, this.LIFE_CODES);
+        const trgtCode  = this.extractCode(text, this.TRGT_CODES);
+        const themeCode = this.extractCode(text, this.THEME_CODES);
+
+        // 지역명·불용어 제거 후 핵심 키워드 추출
+        const keyword = text
+            .replace(/([가-힣]+[특별자치도시군구읍면동로가])\s*/g, '')
+            .replace(/현황|조회|검색|관련|서비스|복지|지원금|사업/g, '')
             .trim();
 
-        return { keyword, lifeCode };
+        return { keyword: keyword || text.trim(), lifeCode, trgtCode, themeCode };
     },
 
     async search(query, page = 1) {
         if (!query.trim()) return;
 
-        this.currentPage = page;
-        const { keyword, lifeCode } = this.parseQuery(query);
-        this.currentKeyword = keyword;
-        this.currentLifeCode = lifeCode;
+        this.currentPage  = page;
+        this.currentQuery = query;
 
         const resultsPanel = document.getElementById('welfareSearchResults');
         const resultsList  = document.getElementById('welfareResultsList');
         const resultsTitle = document.getElementById('welfareResultsTitle');
         const resultsCount = document.getElementById('welfareResultsCount');
         const pager        = document.getElementById('welfareResultsPager');
+        const btn          = document.getElementById('welfareSearchBtn');
 
         if (!resultsPanel || !resultsList) return;
 
-        // 로딩 표시
         resultsPanel.style.display = 'block';
         resultsList.innerHTML = '<div class="welfare-loading">복지서비스를 검색하고 있습니다...</div>';
         if (pager) pager.style.display = 'none';
-
-        const btn = document.getElementById('welfareSearchBtn');
-        if (btn) btn.disabled = true;
+        if (btn)   btn.disabled = true;
 
         try {
-            const params = new URLSearchParams({
-                keyword,
-                page,
-                size: this.pageSize,
-                ...(lifeCode && { life: lifeCode })
-            });
+            const { keyword, lifeCode, trgtCode, themeCode } = this.parseQuery(query);
+            const params = new URLSearchParams({ keyword, page, size: this.pageSize });
+            if (lifeCode)  params.set('life',  lifeCode);
+            if (trgtCode)  params.set('trgt',  trgtCode);
+            if (themeCode) params.set('theme', themeCode);
 
             const response = await fetch(`/api/welfare?${params}`);
             const data = await response.json();
@@ -2311,18 +2333,15 @@ const WelfareSearch = {
                 throw new Error(data.message || data.error || 'API 오류');
             }
 
-            // 결과 헤더 업데이트
             if (resultsTitle) resultsTitle.textContent = `"${query}" 검색 결과`;
             if (resultsCount) resultsCount.textContent = `총 ${data.totalCount.toLocaleString()}건`;
 
-            // 결과 렌더링
             if (!data.items || data.items.length === 0) {
                 resultsList.innerHTML = '<div class="welfare-empty">관련 복지서비스를 찾을 수 없습니다. 다른 키워드로 검색해보세요.</div>';
             } else {
                 resultsList.innerHTML = data.items.map(item => this.renderCard(item)).join('');
             }
 
-            // 페이저
             this.updatePager(data.totalCount, page);
 
         } catch (error) {
@@ -2340,6 +2359,13 @@ const WelfareSearch = {
             ? `<span class="welfare-meta-tag life">${item.life}</span>` : '';
         const targetTag = item.target
             ? `<span class="welfare-meta-tag target">${item.target}</span>` : '';
+        const themeTag = item.theme
+            ? `<span class="welfare-meta-tag theme">${item.theme}</span>` : '';
+
+        const badges = [];
+        if (item.cycle)     badges.push(`<span class="welfare-badge cycle">${item.cycle}</span>`);
+        if (item.provision) badges.push(`<span class="welfare-badge provision">${item.provision}</span>`);
+        if (item.online)    badges.push(`<span class="welfare-badge online">온라인신청</span>`);
 
         return `
         <div class="welfare-card">
@@ -2348,8 +2374,9 @@ const WelfareSearch = {
                 ${item.link ? `<a class="welfare-card-link" href="${item.link}" target="_blank" rel="noopener">자세히 보기</a>` : ''}
             </div>
             ${item.summary ? `<p class="welfare-card-summary">${item.summary}</p>` : ''}
+            ${badges.length ? `<div class="welfare-card-badges">${badges.join('')}</div>` : ''}
             <div class="welfare-card-meta">
-                ${ministryTag}${lifeTag}${targetTag}
+                ${ministryTag}${lifeTag}${targetTag}${themeTag}
             </div>
         </div>`;
     },
@@ -2372,10 +2399,10 @@ const WelfareSearch = {
     },
 
     bindEvents() {
-        const input  = document.getElementById('welfareSearchInput');
-        const btn    = document.getElementById('welfareSearchBtn');
-        const prev   = document.getElementById('welfarePrevBtn');
-        const next   = document.getElementById('welfareNextBtn');
+        const input = document.getElementById('welfareSearchInput');
+        const btn   = document.getElementById('welfareSearchBtn');
+        const prev  = document.getElementById('welfarePrevBtn');
+        const next  = document.getElementById('welfareNextBtn');
 
         if (btn) {
             btn.addEventListener('click', () => {
@@ -2393,7 +2420,6 @@ const WelfareSearch = {
             });
         }
 
-        // 빠른 검색 태그
         document.querySelectorAll('.quick-tag').forEach(tag => {
             tag.addEventListener('click', () => {
                 const q = tag.dataset.q;
@@ -2402,18 +2428,17 @@ const WelfareSearch = {
             });
         });
 
-        // 페이저
         if (prev) {
             prev.addEventListener('click', () => {
                 if (this.currentPage > 1) {
-                    const q = document.getElementById('welfareSearchInput')?.value || this.currentKeyword;
+                    const q = document.getElementById('welfareSearchInput')?.value || this.currentQuery;
                     this.search(q, this.currentPage - 1);
                 }
             });
         }
         if (next) {
             next.addEventListener('click', () => {
-                const q = document.getElementById('welfareSearchInput')?.value || this.currentKeyword;
+                const q = document.getElementById('welfareSearchInput')?.value || this.currentQuery;
                 this.search(q, this.currentPage + 1);
             });
         }

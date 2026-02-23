@@ -1200,6 +1200,45 @@ body {
     color: #9333ea;
 }
 
+.welfare-meta-tag.theme {
+    background: #fff7ed;
+    color: #ea580c;
+}
+
+/* 지원주기·제공유형·온라인신청 배지 */
+.welfare-card-badges {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+    margin-bottom: 8px;
+}
+
+.welfare-badge {
+    font-size: 11px;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-weight: 500;
+    border: 1px solid transparent;
+}
+
+.welfare-badge.cycle {
+    background: #f1f5f9;
+    color: #475569;
+    border-color: #cbd5e1;
+}
+
+.welfare-badge.provision {
+    background: #f0f9ff;
+    color: #0369a1;
+    border-color: #bae6fd;
+}
+
+.welfare-badge.online {
+    background: #f0fdf4;
+    color: #16a34a;
+    border-color: #bbf7d0;
+}
+
 /* 로딩 / 에러 / 빈 결과 */
 .welfare-loading,
 .welfare-error,
