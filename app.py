@@ -43,126 +43,160 @@ st.set_page_config(
 # Custom CSS for Antigravity aesthetics
 st.markdown("""
 <style>
-    /* Main theme - professional, futuristic */
+    /* Google Antigravity Design System */
+    @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css');
+    
+    :root {
+        --primary: #6366f1;
+        --primary-glow: rgba(99, 102, 241, 0.4);
+        --bg-dark: #0f172a;
+        --card-bg: rgba(30, 41, 59, 0.7);
+        --border-color: rgba(99, 102, 241, 0.2);
+        --text-main: #f1f5f9;
+        --text-dim: #94a3b8;
+        --glass-blur: blur(12px);
+    }
+
     .stApp {
-        background: linear-gradient(180deg, #0f172a 0%, #1e293b 100%);
+        background: radial-gradient(circle at 50% 0%, #1e1b4b 0%, #0f172a 100%);
+        color: var(--text-main);
+        font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, Roboto, sans-serif;
+    }
+
+    /* GNB - Global Navigation Bar */
+    .gnb-container {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 64px;
+        background: rgba(15, 23, 42, 0.8);
+        backdrop-filter: var(--glass-blur);
+        border-bottom: 1px solid var(--border-color);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0 40px;
+        z-index: 1000;
+        transition: all 0.3s ease;
+    }
+
+    .logo-container {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        cursor: pointer;
+    }
+
+    .logo-text {
+        font-size: 1.5rem;
+        font-weight: 800;
+        background: linear-gradient(90deg, #818cf8, #c084fc);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        letter-spacing: -0.05em;
+    }
+
+    .gnb-menu {
+        display: flex;
+        gap: 32px;
+    }
+
+    .gnb-menu-item {
+        color: var(--text-dim);
+        font-weight: 500;
+        font-size: 0.95rem;
+        cursor: pointer;
+        transition: color 0.2s;
+    }
+
+    .gnb-menu-item:hover, .gnb-menu-item.active {
+        color: var(--text-main);
+    }
+
+    .byok-button {
+        background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+        color: white;
+        border: none;
+        padding: 8px 18px;
+        border-radius: 8px;
+        font-weight: 600;
+        font-size: 0.875rem;
+        box-shadow: 0 4px 12px var(--primary-glow);
+        cursor: pointer;
+        transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+    .byok-button:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 6px 16px var(--primary-glow);
     }
     
     /* Floating cards effect */
     .floating-card {
-        background: rgba(30, 41, 59, 0.8);
-        border: 1px solid rgba(99, 102, 241, 0.3);
-        border-radius: 16px;
-        padding: 20px;
+        background: var(--card-bg);
+        border: 1px solid var(--border-color);
+        border-radius: 20px;
+        padding: 24px;
         margin: 10px 0;
-        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
-        backdrop-filter: blur(10px);
-        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+        backdrop-filter: var(--glass-blur);
+        transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.4s ease;
     }
     
     .floating-card:hover {
-        transform: translateY(-4px);
-        box-shadow: 0 12px 40px rgba(99, 102, 241, 0.2);
+        transform: translateY(-8px);
+        box-shadow: 0 16px 48px rgba(99, 102, 241, 0.2);
+        border-color: rgba(99, 102, 241, 0.5);
     }
     
-    /* Metric cards */
-    .metric-container {
-        background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
-        border-radius: 12px;
-        padding: 16px;
-        text-align: center;
-        border: 1px solid rgba(148, 163, 184, 0.2);
+    /* Sidebar Overhaul */
+    section[data-testid="stSidebar"] {
+        background: rgba(15, 23, 42, 0.95) !important;
+        border-right: 1px solid var(--border-color);
+        backdrop-filter: var(--glass-blur);
     }
-    
-    .metric-value {
-        font-size: 2.5rem;
-        font-weight: 700;
-        color: #f1f5f9;
-        line-height: 1.2;
+
+    /* Population Pyramid Styling */
+    .elderly-highlight {
+        color: #FC5C65;
+        font-weight: bold;
     }
-    
-    .metric-label {
-        font-size: 0.875rem;
-        color: #94a3b8;
-        margin-top: 4px;
-    }
-    
-    /* Urgency badges */
-    .urgency-critical { background: #dc2626; color: white; }
-    .urgency-high { background: #f97316; color: white; }
-    .urgency-elevated { background: #fbbf24; color: #1e293b; }
-    .urgency-moderate { background: #34d399; color: #1e293b; }
-    .urgency-low { background: #60a5fa; color: white; }
-    
-    .urgency-badge {
-        padding: 4px 12px;
-        border-radius: 20px;
-        font-weight: 600;
-        font-size: 0.75rem;
-        display: inline-block;
-    }
-    
-    /* Navigation breadcrumb */
-    .breadcrumb {
-        display: flex;
-        gap: 8px;
-        align-items: center;
-        padding: 12px 16px;
-        background: rgba(30, 41, 59, 0.6);
-        border-radius: 8px;
-        margin-bottom: 20px;
-    }
-    
-    .breadcrumb-item {
-        color: #94a3b8;
-        cursor: pointer;
-        transition: color 0.2s;
-    }
-    
-    .breadcrumb-item:hover {
-        color: #f1f5f9;
-    }
-    
-    .breadcrumb-separator {
-        color: #475569;
-    }
-    
-    /* Sidebar styling */
-    .css-1d391kg {
-        background: #0f172a;
-    }
-    
-    /* Headers */
-    h1, h2, h3 {
-        color: #f1f5f9 !important;
-    }
-    
-    /* Rationale text box */
+
+    /* Rationale box */
     .rationale-box {
-        background: #1e293b;
-        border-left: 4px solid #6366f1;
-        padding: 16px 20px;
-        border-radius: 0 8px 8px 0;
-        font-size: 1rem;
-        line-height: 1.7;
+        background: rgba(30, 41, 59, 0.5);
+        border-left: 4px solid var(--primary);
+        padding: 20px;
+        border-radius: 4px 12px 12px 4px;
+        font-size: 1.05rem;
+        line-height: 1.8;
         color: #e2e8f0;
+        margin: 16px 0;
     }
-    
-    /* Copy button */
-    .copy-btn {
-        background: #6366f1;
-        color: white;
-        border: none;
-        padding: 8px 16px;
-        border-radius: 6px;
-        cursor: pointer;
-        font-weight: 500;
-    }
-    
-    .copy-btn:hover {
-        background: #4f46e5;
-    }
+
+    /* Hide default Streamlit elements if needed */
+    #MainMenu {visibility: hidden;}
+    footer {visibility: hidden;}
 </style>
+""", unsafe_allow_html=True)
+
+# Render Constant GNB
+st.markdown("""
+    <div class="gnb-container">
+        <div class="logo-container" onclick="window.location.reload()">
+            <span style="font-size: 24px;">🎯</span>
+            <span class="logo-text">SODAPOP 2.0</span>
+        </div>
+        <div class="gnb-menu">
+            <span class="gnb-menu-item active">인구심층분석</span>
+            <span class="gnb-menu-item">복지서비스 검색</span>
+            <span class="gnb-menu-item">복지 캘린더</span>
+            <span class="gnb-menu-item">AI 인사이트</span>
+        </div>
+        <button class="byok-button">🔑 AI/API 설정</button>
+    </div>
+    <div style="height: 80px;"></div>
 """, unsafe_allow_html=True)
 
 
@@ -190,6 +224,10 @@ def init_session_state():
     if 'rationale_gen' not in st.session_state:
         st.session_state.rationale_gen = WelfareRationaleGenerator()
     
+    if 'gemini_analyzer' not in st.session_state:
+        from sodapop.generators.gemini import GeminiAnalyzer
+        st.session_state.gemini_analyzer = GeminiAnalyzer(api_key=st.session_state.gemini_api_key)
+    
     if 'current_level' not in st.session_state:
         st.session_state.current_level = AdminLevel.SIDO
     
@@ -198,6 +236,13 @@ def init_session_state():
     
     if 'demo_data' not in st.session_state:
         st.session_state.demo_data = generate_demo_data()
+    
+    # API Keys (BYOK)
+    if 'kosis_api_key' not in st.session_state:
+        st.session_state.kosis_api_key = os.getenv("KOSIS_API_KEY", "")
+    
+    if 'gemini_api_key' not in st.session_state:
+        st.session_state.gemini_api_key = os.getenv("GEMINI_API_KEY", "")
 
 init_session_state()
 
@@ -313,8 +358,67 @@ def generate_demo_data() -> Dict[str, Dict[int, DemographicData]]:
 
 
 # ============================================================================
+# API & Real-time Data Loading
+# ============================================================================
+
+def load_real_data(region_code: str):
+    """Fetch and process data from KOSIS API"""
+    from sodapop.api.kosis import KosisClient
+    
+    client = KosisClient(api_key=st.session_state.kosis_api_key)
+    processor = st.session_state.processor
+    
+    with st.spinner(f"KOSIS API에서 {region_code} 데이터를 불러오는 중..."):
+        try:
+            # 1. Fetch population by age & gender
+            df = client.get_population_by_age(region_code)
+            if not df.empty:
+                processed = processor.process_kosis_dataframe(df)
+                if processed:
+                    # Update session data
+                    st.session_state.demo_data.update(processed)
+                    st.success(f"✅ {region_code} 데이터 로드 완료 (newEst=Y)")
+                    return True
+            else:
+                st.error("데이터를 찾을 수 없습니다. (KOSIS 연동 확인 필요)")
+        except Exception as e:
+            st.error(f"데이터 로드 중 오류 발생: {e}")
+    return False
+
+
+# ============================================================================
 # UI Components
 # ============================================================================
+
+def render_api_settings():
+    """Render API configuration settings in sidebar"""
+    with st.expander("🔑 AI/API 설정 (BYOK)", expanded=False):
+        st.markdown("*사용자 본인의 API 키를 입력하세요.*")
+        
+        kosis_key = st.text_input(
+            "KOSIS OpenAPI Key", 
+            value=st.session_state.kosis_api_key,
+            type="password",
+            help="https://kosis.kr/openapi/ 에서 발급 가능"
+        )
+        if kosis_key != st.session_state.kosis_api_key:
+            st.session_state.kosis_api_key = kosis_key
+            st.toast("KOSIS 키가 업데이트되었습니다.")
+            
+        gemini_key = st.text_input(
+            "Gemini API Key", 
+            value=st.session_state.gemini_api_key,
+            type="password",
+            help="https://ai.google.dev/ 에서 발급 가능"
+        )
+        if gemini_key != st.session_state.gemini_api_key:
+            st.session_state.gemini_api_key = gemini_key
+            st.toast("Gemini 키가 업데이트되었습니다.")
+
+        if st.session_state.kosis_api_key or st.session_state.gemini_api_key:
+            st.success("인증키 등록됨")
+        else:
+            st.warning("인증키를 등록해 주세요.")
 
 def render_metric_card(label: str, value: str, delta: Optional[str] = None, 
                        delta_color: str = "normal") -> str:
@@ -383,7 +487,12 @@ def main():
                  use_container_width=True)
         st.markdown("---")
         
+        # BYOK Settings
+        render_api_settings()
+        
         st.markdown("### 🎯 지역 선택")
+        
+        # ... (rest of the sidebar selection logic)
         
         # Level 1: Sido selection
         sido_options = {code: name for code, name in KIKcdHierarchy.SIDO_CODES.items()}
@@ -394,21 +503,62 @@ def main():
             key="sido_select"
         )
         
-        # Filter available regions by selected sido
-        available_regions = [
+        # Level 2: Sigungu selection
+        available_sigungu = [
             (code, data[max(data.keys())].region_name) 
             for code, data in st.session_state.demo_data.items()
-            if code.startswith(selected_sido)
+            if code.startswith(selected_sido) and code[2:5] != "000" and code[5:] == "00000"
         ]
         
-        if available_regions:
-            selected_region_code = st.selectbox(
-                "시/군/구",
-                options=[code for code, _ in available_regions],
-                format_func=lambda x: next(name for code, name in available_regions if code == x),
-                key="region_select"
-            )
-            st.session_state.selected_region = selected_region_code
+        # Add a default option if none found
+        if not available_sigungu:
+            available_sigungu = [(selected_sido, "전체")]
+            
+        selected_sigungu_code = st.selectbox(
+            "시/군/구",
+            options=[code for code, _ in available_sigungu],
+            format_func=lambda x: next(name for code, name in available_sigungu if code == x),
+            key="sigungu_select"
+        )
+        
+        # Trigger real data load if not present and key is available
+        if selected_sigungu_code not in st.session_state.demo_data:
+            if st.session_state.kosis_api_key:
+                load_real_data(selected_sigungu_code)
+            else:
+                st.info("💡 KOSIS API 키를 등록하면 실시간 데이터를 불러올 수 있습니다.")
+        
+        # Level 3: EMD selection (Placeholder for now until Data Engine is ready)
+        st.selectbox(
+            "읍/면/동",
+            options=["전체"],
+            index=0,
+            disabled=True,
+            help="읍면동 레벨 데이터는 KOSIS API 연동 시 활성화됩니다."
+        )
+        
+        st.session_state.selected_region = selected_sigungu_code
+        
+        st.markdown("---")
+        
+        st.markdown("### 👥 대상자 필터")
+        target_options = ["아동", "청년", "중장년", "노인", "1인가구", "다문화", "장애인"]
+        selected_targets = st.multiselect(
+            "관심 대상 선택",
+            options=target_options,
+            default=["노인"],
+            key="target_filter"
+        )
+        
+        st.markdown("---")
+        
+        st.markdown("### 📅 연도/시점")
+        selected_year = st.select_slider(
+            "분석 시점",
+            options=list(range(2021, 2026)),
+            value=2025,
+            key="analysis_year"
+        )
         
         st.markdown("---")
         
@@ -446,11 +596,13 @@ def main():
     st.markdown("*Evidence-Based Practice를 위한 인구구조 분석 플랫폼*")
     
     # Tabs for different views
-    tab1, tab2, tab3, tab4 = st.tabs([
+    tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs([
         "📊 대시보드", 
         "🏛️ 지역 분석", 
         "📈 순위 & 트렌드",
-        "📝 근거문 생성"
+        "📝 근거문 생성",
+        "💡 AI 인사이트",
+        "📘 분석 가이드"
     ])
     
     # ========================================================================
@@ -684,52 +836,35 @@ def main():
                         key="target_service"
                     )
                 
-                if st.button("✨ 근거문 생성", type="primary", use_container_width=True):
-                    generator = st.session_state.rationale_gen
+                # AI Option
+                use_gemini = st.checkbox("✨ Gemini AI를 사용하여 심층 Rationale 생성", value=True)
+                
+                if st.button("🚀 근거문 생성", type="primary", use_container_width=True):
+                    if use_gemini:
+                        with st.spinner("Gemini AI가 인구 데이터를 심층 분석 중..."):
+                            rationale = st.session_state.gemini_analyzer.analyze_insight(demo, metrics)
+                            st.session_state.last_rationale = rationale
+                    else:
+                        with st.spinner("데이터 기반 근거문 생성 중..."):
+                            if output_type == "사업계획서 삽입용 문구":
+                                rationale = st.session_state.rationale_gen.generate_proposal_snippet(demo, metrics)
+                            elif output_type == "요약 보고서":
+                                rationale = st.session_state.rationale_gen.generate_executive_summary(demo, metrics).full_text
+                            else:
+                                rationale = st.session_state.rationale_gen.generate_full_report(demo, metrics, region_data)
+                            st.session_state.last_rationale = rationale
+                
+                if 'last_rationale' in st.session_state:
+                    st.markdown("---")
+                    st.success("✅ 생성 완료")
+                    st.markdown(f"""
+                    <div class="rationale-box">
+                        {st.session_state.last_rationale}
+                    </div>
+                    """, unsafe_allow_html=True)
                     
-                    with st.spinner("근거문 생성 중..."):
-                        if output_type == "사업계획서 삽입용 문구":
-                            # Generate proposal snippet
-                            snippet = generator.generate_proposal_snippet(demo, metrics)
-                            
-                            st.markdown("### 📋 생성된 근거문")
-                            st.markdown(f"""
-                            <div class="rationale-box">
-                                {snippet}
-                            </div>
-                            """, unsafe_allow_html=True)
-                            
-                            # Copy button
-                            st.text_area("복사용 텍스트", snippet, height=150, key="copy_snippet")
-                            st.info("💡 위 텍스트를 선택하여 복사 후, 사업계획서에 붙여넣기 하세요.")
-                        
-                        elif output_type == "요약 보고서":
-                            # Generate executive summary
-                            output = generator.generate_executive_summary(demo, metrics)
-                            
-                            st.markdown("### 📊 요약 보고서")
-                            st.markdown(output.full_text)
-                            
-                            # Key statistics
-                            st.markdown("#### 핵심 통계")
-                            stats_df = pd.DataFrame([output.statistics]).T
-                            stats_df.columns = ["값"]
-                            st.dataframe(stats_df, use_container_width=True)
-                        
-                        else:
-                            # Generate full report
-                            report = generator.generate_full_report(demo, metrics, region_data)
-                            
-                            st.markdown("### 📑 전체 분석 보고서")
-                            st.markdown(report)
-                            
-                            # Download button
-                            st.download_button(
-                                "📥 보고서 다운로드 (Markdown)",
-                                report,
-                                file_name=f"{demo.region_name}_분석보고서_{latest_year}.md",
-                                mime="text/markdown"
-                            )
+                    st.text_area("복사용 텍스트", st.session_state.last_rationale, height=200)
+                    st.info("💡 위 텍스트를 선택하여 복사 후, 사업계획서에 붙여넣기 하세요.")
                 
                 # Quick insights
                 st.markdown("---")
@@ -780,6 +915,65 @@ def main():
                     )
         else:
             st.info("👈 사이드바에서 근거문을 생성할 지역을 선택해주세요.")
+
+    # ========================================================================
+    # Tab 5: AI Insight (Gemini)
+    # ========================================================================
+    with tab5:
+        st.markdown("## 💡 AI 인사이트 & 지능형 질의")
+        st.markdown("*Gemini API를 활용한 맞춤형 데이터 질문과 인사이트 도출*")
+        
+        if st.session_state.selected_region:
+            region_code = st.session_state.selected_region
+            region_data = st.session_state.demo_data.get(region_code, {})
+            
+            if region_data:
+                demo = region_data[max(region_data.keys())]
+                
+                render_floating_card(f"""
+                    <h4 style='color:#818cf8'>데이터 컨텍스트: {demo.region_name} ({demo.year}년)</h4>
+                    <p>현재 인구 {demo.total_population:,}명, 고령화율 {demo.aging_ratio:.1f}% 데이터가 분석 대상입니다.</p>
+                """)
+                
+                st.markdown("### 💬 데이터에게 물어보세요")
+                user_query = st.text_input("질문을 입력하세요", 
+                                          placeholder="이 지역의 고령화 속도는 전국 평균과 비교했을 때 어느 정도인가요?")
+                
+                if st.button("질문하기", key="gemini_ask_query"):
+                    if user_query:
+                        with st.spinner("AI가 데이터를 분석하며 답변을 생성 중..."):
+                            context = {
+                                "region": demo.region_name,
+                                "population": demo.total_population,
+                                "aging_ratio": demo.aging_ratio,
+                                "old_old": demo.old_old,
+                            }
+                            answer = st.session_state.gemini_analyzer.ask_natural_query(user_query, context)
+                            st.markdown("#### 🤖 AI 답변")
+                            st.info(answer)
+                    else:
+                        st.warning("질문을 입력해 주세요.")
+        else:
+            st.info("👈 좌측에서 지역을 선택하면 AI 인사이트를 활성화할 수 있습니다.")
+
+    # ========================================================================
+    # Tab 6: Analysis Guide
+    # ========================================================================
+    with tab6:
+        st.markdown("## 📘 SODAPOP 2.0 분석 가이드")
+        st.markdown("""
+        ### 🎯 서비스 개요
+        SODAPOP(Social Demographic Analysis Platform for Optimal Planning)은 복지 현장의 데이터 격차를 해소하기 위해 설계되었습니다.
+        
+        ### 🔍 주요 지표 설명
+        - **고령화 속도 (Aging Velocity)**: 단순 비율이 아닌, 고령 인구의 연간 복합 성장률(CAGR)을 의미합니다.
+        - **후기고령 비율**: 고령인구 내 75세 이상의 비중으로, 돌봄 강도가 높은 대상을 식별합니다.
+        - **긴급도 점수 (Urgency Score)**: 고령화 속도, 후기고령 비중, 부양비 등을 종합한 복지 개입 우선순위입니다.
+        
+        ### 💡 디자인 원칙: Antigravity
+        - **Zero Inertia**: 복잡한 데이터 조작 없이 직관적인 인사이트를 제공합니다.
+        - **Fluid Experience**: Glassmorphism과 부드러운 전환을 통해 전문적이고 미래지향적인 경험을 제공합니다.
+        """)
     
     # Footer
     st.markdown("---")

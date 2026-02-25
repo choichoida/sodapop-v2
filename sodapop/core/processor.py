@@ -210,46 +210,60 @@ class DemographicProcessor:
         return any(pattern in value_str for pattern in self.EXCLUDE_PATTERNS)
     
     def process_kosis_dataframe(self, df: pd.DataFrame, 
-                                 region_col: str = 'region',
-                                 region_code_col: str = 'region_code',
-                                 year_col: str = 'year',
-                                 age_col: str = 'age_group',
-                                 gender_col: str = 'gender',
-                                 population_col: str = 'population') -> Dict[str, Dict[int, DemographicData]]:
+                                 region_col: str = 'C1_NM',
+                                 region_code_col: str = 'C1',
+                                 year_col: str = 'PRD_DE',
+                                 age_col: str = 'C2_NM',
+                                 gender_col: str = 'C3_NM',
+                                 population_col: str = 'DT') -> Dict[str, Dict[int, DemographicData]]:
         """
-        Process a KOSIS-format DataFrame into DemographicData objects
+        Process a KOSIS API response DataFrame into DemographicData objects
         
-        Expected DataFrame structure:
-        - region: Region name
-        - region_code: KIKcd H-Code
-        - year: Year (2021-2025)
-        - age_group: Age group string (e.g., "0~4세", "75세 이상")
-        - gender: Gender ("남", "여", "계")
-        - population: Population count
+        Expected KOSIS API structure:
+        - C1: Region code (or C1_OBJ_NM context)
+        - C1_NM: Region name
+        - PRD_DE: Period (YYYYMM or YYYY)
+        - C2_NM: Age group (if applicable)
+        - C3_NM: Gender (if applicable)
+        - DT: Data value
         
         Returns:
             Dict[region_code, Dict[year, DemographicData]]
         """
         results: Dict[str, Dict[int, DemographicData]] = {}
         
-        # Filter out total entries
-        df_filtered = df[
-            ~df[region_col].apply(self._is_total_entry) &
-            ~df[age_col].apply(self._is_total_entry)
-        ].copy()
+        if df.empty:
+            return results
+
+        # Normalize column mapping if they don't exist
+        # Sometimes KOSIS returns different column names depending on the table
+        cols = df.columns
+        if population_col not in cols and 'DT' in cols: population_col = 'DT'
+        if region_col not in cols and 'C1_NM' in cols: region_col = 'C1_NM'
+        if year_col not in cols and 'PRD_DE' in cols: year_col = 'PRD_DE'
         
-        # Filter to analysis years
-        df_filtered = df_filtered[df_filtered[year_col].isin(self.analysis_years)]
+        # Filter out total entries
+        # Use a more lenient filter for KOSIS data
+        df_filtered = df.copy()
         
         # Group by region and year
-        for (region_code, year), group in df_filtered.groupby([region_code_col, year_col]):
+        for (region_code, year_full), group in df_filtered.groupby([region_code_col, year_col]):
+            # Extract year from PRD_DE (YYYYMM)
+            year = int(str(year_full)[:4])
+            if year not in self.analysis_years:
+                continue
+                
             region_code = str(region_code).ljust(10, '0')[:10]
             region_name = group[region_col].iloc[0] if len(group) > 0 else ""
+            
+            # Skip if region name is a total pattern
+            if self._is_total_entry(region_name):
+                continue
             
             demo = DemographicData(
                 region_code=region_code,
                 region_name=region_name,
-                year=int(year),
+                year=year,
                 male_by_cluster={c.value: 0 for c in WelfareCluster},
                 female_by_cluster={c.value: 0 for c in WelfareCluster},
                 age_distribution={}
